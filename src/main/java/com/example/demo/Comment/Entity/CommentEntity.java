@@ -3,11 +3,15 @@ package com.example.demo.Comment.Entity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.*;
-
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.time.LocalDateTime;
 
+
 @Entity
-@Table(name = "comment")
+@Table(name = "comment", uniqueConstraints = @UniqueConstraint(columnNames = {"id", "post_id"}))
+@EntityListeners(AuditingEntityListener.class)
 public class CommentEntity {
 
     @Id
@@ -17,20 +21,90 @@ public class CommentEntity {
     @Column(name = "post_id", nullable = false)
     private int postId;
 
-    @column(name = "login_id", length = 25, nullable = false)
+    @Column(name = "login_id", length = 25, nullable = false)
     private String loginId;
 
-    @column(name = "nickname", length = 20, nullable = false)
+    @Column(name = "nickname", length = 20, nullable = false)
     private String nickname;
 
-    @column(name = "content", length = 50)
+    @Column(name = "content", length = 50)
     private String content;
 
-    @column(name = "upload_date")
+    @CreatedDate
+    @Column(name = "upload_date")
     private LocalDateTime uploadDate;
 
-    @column(name = "modify_date")
+    @LastModifiedDate
+    @Column(name = "modify_date")
     private LocalDateTime modifyDate;
 
-    @column(name = "author")
-    private LocalDateTime author;
+    @Column(name = "author", length = 30)
+    private String author;
+
+    public CommentEntity() {
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public int getPostId() {
+        return postId;
+    }
+
+    public void setPostId(int postId) {
+        this.postId = postId;
+    }
+
+    public String getLoginId() {
+        return loginId;
+    }
+
+    public void setLoginId(String loginId) {
+        this.loginId = loginId;
+    }
+
+    public String getNickname() {
+        return nickname;
+    }
+
+    public void setNickname(String nickname) {
+        this.nickname = nickname;
+    }
+
+    public String getContent() {
+        return content;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
+    }
+
+    public LocalDateTime getUploadDate() {
+        return uploadDate;
+    }
+
+    public void setUploadDate(LocalDateTime uploadDate) {
+        this.uploadDate = uploadDate;
+    }
+
+    public LocalDateTime getModifyDate() {
+        return modifyDate;
+    }
+
+    public void setModifyDate(LocalDateTime modifyDate) {
+        this.modifyDate = modifyDate;
+    }
+
+    public String getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(String author) {
+        this.author = author;
+    }
+}
