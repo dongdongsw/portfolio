@@ -1,120 +1,68 @@
 package com.example.demo.Login.Entity;
 
-import jakarta.persistence.Entity;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.data.annotation.CreatedDate;
+
+import java.time.LocalDateTime;
 
 
 @Entity
-@Table(name = "user_info", uniqueConstraints = @UniqueConstraint(columnNames = {"externalId", "alias"}))
+@Table(name = "user", uniqueConstraints = @UniqueConstraint(columnNames = {"id","userID","userPwd","nickname","e_mail"}))
 public class User {
+
+    // Getters and Setters
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private int id;  // 회원 고유번호
 
-    @Column(nullable = false)
-    private String externalId;
+    private String login_id;  // 아이디
+    private String login_pw;  // 비밀번호
+    private String nickname;  // 닉네임
+    private String email;  // 이메일
+    private String role;  // 권한
+    private int post_id1;
+    private int post_id2;
+    private int post_id3;
+    private int post_id4;
+    private int post_id5;
 
-    private String phoneNumber;
-    private String email;
-    private String postcode;
-    private String address;
-    private String detailAddress;
-    private String extraAddress;
-    private String fullAddress;
+    @CreatedDate
+    @Column (updatable = false)
+    private LocalDateTime pwudate;  // 비밀번호 재설정 날짜
+    private LocalDateTime regist_date;  // 회원가입 날짜
 
-    @Column(nullable = false)
-    private String alias;
+    public int getID() { return id; }
 
+    public void setId(int id) { this.id = id;}
 
+    public String getUserId() { return login_id; }
 
-    // Getters and Setters
-    public Long getId() {
-        return id;
-    }
+    public void setUserId(String login_id) { this.login_id = login_id; }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public String getUserPwd() { return login_pw; }
 
-    public String getExternalId() {
-        return externalId;
-    }
+    public void setUserPwd(String login_pw) { this.login_pw = login_pw; }
 
-    public void setExternalId(String externalId) {
-        this.externalId = externalId;
-    }
+    public String getNickName() { return nickname; }
 
-    public String getPhoneNumber() {
-        return phoneNumber;
-    }
+    public void setNickName(String nickname) { this.nickname = nickname; }
 
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
-    }
+    public String getEmail() { return email; }
 
-    public String getEmail() {
-        return email;
-    }
+    public void setEmail(String email) { this.email = email; }
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
+    public String getRole() { return role; }
 
-    public String getPostcode() {
-        return postcode;
-    }
+    public void setRole(String role) { this.role = role; }
 
-    public void setPostcode(String postcode) {
-        this.postcode = postcode;
-    }
+    public LocalDateTime getPwudate() { return pwudate; }
 
-    public String getAddress() {
-        return address;
-    }
+    public void setPwudate(LocalDateTime pwdate) { this.pwudate = pwdate; }
 
-    public void setAddress(String address) {
-        this.address = address;
-    }
+    public LocalDateTime getRegistDate() { return regist_date; }
 
-    public String getDetailAddress() {
-        return detailAddress;
-    }
-
-    public void setDetailAddress(String detailAddress) {
-        this.detailAddress = detailAddress;
-    }
-
-    public String getExtraAddress() {
-        return extraAddress;
-    }
-
-    public void setExtraAddress(String extraAddress) {
-        this.extraAddress = extraAddress;
-    }
-
-    public String getFullAddress() {
-        return fullAddress;
-    }
-
-    public void setFullAddress(String fullAddress) {
-        this.fullAddress = fullAddress;
-    }
-
-    public String getAlias() {
-        return alias;
-    }
-
-    public void setAlias(String alias) {
-        this.alias = alias;
-    }
-
-    // 전체 주소 가공
-    public void constructFullAddress() {
-        if (detailAddress != null && !detailAddress.isEmpty()) {
-            this.fullAddress = address + " " + detailAddress;
-        } else {
-            this.fullAddress = address;
-        }
-    }
+    public void setRegistDate(LocalDateTime regist_date) { this.regist_date = regist_date; }
 }
