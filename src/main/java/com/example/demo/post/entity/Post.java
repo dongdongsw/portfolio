@@ -1,210 +1,133 @@
 package com.example.demo.post.entity;
 
+import jakarta.persistence.Entity;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
+
 @Entity
-@Table(name = "post_entity")
+@Table(name = "post_entity", uniqueConstraints = @UniqueConstraint(columnNames = {"externalId", "alias"}))
 public class Post {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "login_id", nullable = false)
-    private String loginid;
+    @Column(nullable = false)
+    private String externalId;
 
-    @Column(name = "nickname")
+    //private String id;
+    private String login_id;
     private String nickname;
-
-    @Column(name = "content")
     private String content;
-
-    @Column(name = "modify_date")
-    private LocalDateTime modifydate;
-
-    @Column(name = "view_count")
-    private int viewcount;
-
-    @Column(name = "upload_date")
-    private LocalDateTime uploaddate;
-
-    @Column(name = "title")
+    private LocalDateTime modify_date;
+    private int view_count;
+    private LocalDateTime upload_date;
     private String title;
+    private String image_path0;
+    private String image_path1;
+    private String image_path2;
+    private String image_path3;
+    private String image_path4;
+    @Column(nullable = false)
+    private String alias;
 
-    @Column(name = "image_path_0")
-    private String imagepath0;
 
-    @Column(name = "image_path_1")
-    private String imagepath1;
 
-    @Column(name = "image_path_2")
-    private String imagepath2;
-
-    @Column(name = "image_path_3")
-    private String imagepath3;
-
-    @Column(name = "image_path_4")
-    private String imagepath4;
-
-    @Column(name = "post_id_1")
-    private int postid1;
-
-    @Column(name = "post_id_2")
-    private int postid2;
-
-    @Column(name = "post_id_3")
-    private int postid3;
-
-    @Column(name = "post_id_4")
-    private int postid4;
-
-    @Column(name = "post_id_5")
-    private int postid5;
-
-    // === Getter & Setter ===
-
-    public Long getid() {
+    // Getters and Setters
+    public Long getId() {
         return id;
     }
 
-    public void setid(Long id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
-    public String getloginid() {
-        return loginid;
+    public String getExternalId() {
+        return externalId;
     }
 
-    public void setloginid(String loginid) {
-        this.loginid = loginid;
+    public void setExternalId(String externalId) {
+        this.externalId = externalId;
     }
 
-    public String getnickname() {
+    public String getLogin_id() {return login_id;}
+
+    public void setLogin_id(String login_id) {
+        this.login_id = login_id;
+    }
+
+    public String getNickname() {
         return nickname;
     }
 
-    public void setnickname(String nickname) {
+    public void setNickname(String nickname) {
         this.nickname = nickname;
     }
 
-    public String getcontent() {
+    public String getContent() {
         return content;
     }
 
-    public void setcontent(String content) {
-        this.content = content;
-    }
+    public void setContent(String content) { this.content = content;}
 
-    public LocalDateTime getmodifydate() {
-        return modifydate;
-    }
+    public LocalDateTime getModify_date() { return modify_date; }
 
-    public void setmodifydate(LocalDateTime modifydate) {
-        this.modifydate = modifydate;
-    }
+    public void setModify_date(LocalDateTime modify_date) { this.modify_date = modify_date; }
 
-    public int getviewcount() {
-        return viewcount;
-    }
 
-    public void setviewcount(int viewcount) {
-        this.viewcount = viewcount;
-    }
+    public int getView_count() { return view_count; }
 
-    public LocalDateTime getuploaddate() {
-        return uploaddate;
-    }
 
-    public void setuploaddate(LocalDateTime uploaddate) {
-        this.uploaddate = uploaddate;
-    }
+    public void setView_count(int view_count) { this.view_count = view_count; }
 
-    public String gettitle() {
-        return title;
-    }
 
-    public void settitle(String title) {
-        this.title = title;
-    }
+    public LocalDateTime getUpload_date() { return upload_date; }
 
-    public String getimagepath0() {
-        return imagepath0;
-    }
 
-    public void setimagepath0(String imagepath0) {
-        this.imagepath0 = imagepath0;
-    }
+    public void setUpload_date(LocalDateTime upload_date) { this.upload_date = upload_date; }
 
-    public String getimagepath1() {
-        return imagepath1;
-    }
 
-    public void setimagepath1(String imagepath1) {
-        this.imagepath1 = imagepath1;
-    }
+    public String getTitle() { return title; }
 
-    public String getimagepath2() {
-        return imagepath2;
-    }
 
-    public void setimagepath2(String imagepath2) {
-        this.imagepath2 = imagepath2;
-    }
+    public void setTitle(String title) { this.title = title; }
 
-    public String getimagepath3() {
-        return imagepath3;
-    }
 
-    public void setimagepath3(String imagepath3) {
-        this.imagepath3 = imagepath3;
-    }
+    public String getAlias() { return alias; }
 
-    public String getimagepath4() {
-        return imagepath4;
-    }
 
-    public void setimagepath4(String imagepath4) {
-        this.imagepath4 = imagepath4;
-    }
+    public String getImage_path0() { return image_path0; }
 
-    public int getpostid1() {
-        return postid1;
-    }
 
-    public void setpostid1(int postid1) {
-        this.postid1 = postid1;
-    }
+    public void setImage_path0(String image_path0) { this.image_path0 = image_path0;}
 
-    public int getpostid2() {
-        return postid2;
-    }
+    public String getImage_path1() { return image_path1; }
 
-    public void setpostid2(int postid2) {
-        this.postid2 = postid2;
-    }
+    public void setImage_path1(String image_path1) { this.image_path1 = image_path1;}
 
-    public int getpostid3() {
-        return postid3;
-    }
+    public String getImage_path2() { return image_path2; }
 
-    public void setpostid3(int postid3) {
-        this.postid3 = postid3;
-    }
+    public void setImage_path2(String image_path2) { this.image_path2 = image_path2;}
 
-    public int getpostid4() {
-        return postid4;
-    }
+    public String getImage_path3() { return image_path3; }
 
-    public void setpostid4(int postid4) {
-        this.postid4 = postid4;
-    }
+    public void setImage_path3(String image_path3) { this.image_path3 = image_path3;}
 
-    public int getpostid5() {
-        return postid5;
-    }
+    public String getImage_path4() { return image_path4; }
 
-    public void setpostid5(int postid5) {
-        this.postid5 = postid5;
-    }
+    public void setImage_path4(String image_path4) { this.image_path4 = image_path4;}
+
+    public void setAlias(String alias) { this.alias = alias; }
+
+
+
+    // 전체 주소 가공
+    /*public void constructFullAddress() {
+        if (detailAddress != null && !detailAddress.isEmpty()) {
+            this.fullAddress = address + " " + detailAddress;
+        } else {
+            this.fullAddress = address;
+        }
+    }*/
 }
