@@ -1,15 +1,16 @@
 package com.example.demo.Login.Entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
 
 @Entity
-@Table(name = "user", uniqueConstraints = @UniqueConstraint(columnNames = {"id","userID","userPwd","nickname","e_mail"}))
+@Table(name = "user")
+@EntityListeners(AuditingEntityListener.class) //@LastModifiedDate, @CreatedDate를 쓰기 위해서 추가 해야함
 public class User {
 
     // Getters and Setters
@@ -18,33 +19,42 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;  // 회원 고유번호
 
-    private String login_id;  // 아이디
-    private String login_pw;  // 비밀번호
+    @Column(name = "login_id",unique = true, length = 25, nullable = false, updatable = false)
+    private String loginid;  // 아이디
+
+    @Column(name = "login_pw", length = 25, nullable = false) //unique는 사용하지 않음 Security를 사용해서 암호화 하기
+    private String loginpw;  // 비밀번호
+
+    @Column(unique = true, length = 20, nullable = false)
     private String nickname;  // 닉네임
+
+    @Column (nullable = false, unique = true)
     private String email;  // 이메일
+
+    @Column (nullable = false)
     private String role;  // 권한
-    private int post_id1;
-    private int post_id2;
-    private int post_id3;
-    private int post_id4;
-    private int post_id5;
 
     @CreatedDate
-    @Column (updatable = false)
-    private LocalDateTime pwudate;  // 비밀번호 재설정 날짜
-    private LocalDateTime regist_date;  // 회원가입 날짜
+    @Column(name = "regist_date", nullable = false)
+    private LocalDateTime registdate;  // 회원가입 날짜
 
-    public int getID() { return id; }
+    @LastModifiedDate
+    @Column (nullable = false)
+    private LocalDateTime pwupdate;  // 비밀번호 재설정 날짜
+
+
+
+    public int getId() { return id; }
 
     public void setId(int id) { this.id = id;}
 
-    public String getUserId() { return login_id; }
+    public String getLoginid() { return loginid; }
 
-    public void setUserId(String login_id) { this.login_id = login_id; }
+    public void setLoginid(String login_id) { this.loginid = login_id; }
 
-    public String getUserPwd() { return login_pw; }
+    public String getUserPwd() { return loginpw; }
 
-    public void setUserPwd(String login_pw) { this.login_pw = login_pw; }
+    public void setUserPwd(String login_pw) { this.loginpw = login_pw; }
 
     public String getNickName() { return nickname; }
 
@@ -58,11 +68,11 @@ public class User {
 
     public void setRole(String role) { this.role = role; }
 
-    public LocalDateTime getPwudate() { return pwudate; }
+    public LocalDateTime getPwudate() { return pwupdate; }
 
-    public void setPwudate(LocalDateTime pwdate) { this.pwudate = pwdate; }
+    public void setPwupdate(LocalDateTime pwupdate) { this.pwupdate = pwupdate; }
 
-    public LocalDateTime getRegistDate() { return regist_date; }
+    public LocalDateTime getRegistDate() { return registdate; }
 
-    public void setRegistDate(LocalDateTime regist_date) { this.regist_date = regist_date; }
+    public void setRegistDate(LocalDateTime regist_date) { this.registdate = regist_date; }
 }
