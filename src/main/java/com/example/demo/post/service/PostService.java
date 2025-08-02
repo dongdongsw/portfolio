@@ -36,11 +36,6 @@ public class PostService {
         post.setnickname(dto.getNickname());
         post.setcontent(dto.getContent());
         post.settitle(dto.getTitle());
-        post.setimagepath0(dto.getImagepath0());
-        post.setimagepath1(dto.getImagepath1());
-        post.setimagepath2(dto.getImagepath2());
-        post.setimagepath3(dto.getImagepath3());
-        post.setimagepath4(dto.getImagepath4());
         post.setpostid1(dto.getPostid1());
         post.setpostid2(dto.getPostid2());
         post.setpostid3(dto.getPostid3());
@@ -91,11 +86,6 @@ public class PostService {
         dto.setUploaddate(post.getuploaddate());
         dto.setViewcount(post.getviewcount());
         dto.setTitle(post.gettitle());
-        dto.setImagepath0(post.getimagepath0());
-        dto.setImagepath1(post.getimagepath1());
-        dto.setImagepath2(post.getimagepath2());
-        dto.setImagepath3(post.getimagepath3());
-        dto.setImagepath4(post.getimagepath4());
         dto.setPostid1(post.getpostid1());
         dto.setPostid2(post.getpostid2());
         dto.setPostid3(post.getpostid3());

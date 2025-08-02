@@ -15,11 +15,6 @@ public class PostRequestDto {
     private LocalDateTime modifydate;
     private LocalDateTime uploaddate;
     private String title;
-    private String imagepath0;
-    private String imagepath1;
-    private String imagepath2;
-    private String imagepath3;
-    private String imagepath4;
     private int postid1;
     private int postid2;
     private int postid3;

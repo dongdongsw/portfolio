@@ -16,11 +16,6 @@ public class PostResponseDto {
     private LocalDateTime uploaddate;
     private int viewcount;
     private String title;
-    private String imagepath0;
-    private String imagepath1;
-    private String imagepath2;
-    private String imagepath3;
-    private String imagepath4;
     private int postid1;
     private int postid2;
     private int postid3;

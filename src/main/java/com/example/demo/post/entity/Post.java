@@ -32,21 +32,6 @@ public class Post {
     @Column(name = "title")
     private String title;
 
-    @Column(name = "image_path_0")
-    private String imagepath0;
-
-    @Column(name = "image_path_1")
-    private String imagepath1;
-
-    @Column(name = "image_path_2")
-    private String imagepath2;
-
-    @Column(name = "image_path_3")
-    private String imagepath3;
-
-    @Column(name = "image_path_4")
-    private String imagepath4;
-
     @Column(name = "post_id_1")
     private int postid1;
 
@@ -126,46 +111,6 @@ public class Post {
 
     public void settitle(String title) {
         this.title = title;
-    }
-
-    public String getimagepath0() {
-        return imagepath0;
-    }
-
-    public void setimagepath0(String imagepath0) {
-        this.imagepath0 = imagepath0;
-    }
-
-    public String getimagepath1() {
-        return imagepath1;
-    }
-
-    public void setimagepath1(String imagepath1) {
-        this.imagepath1 = imagepath1;
-    }
-
-    public String getimagepath2() {
-        return imagepath2;
-    }
-
-    public void setimagepath2(String imagepath2) {
-        this.imagepath2 = imagepath2;
-    }
-
-    public String getimagepath3() {
-        return imagepath3;
-    }
-
-    public void setimagepath3(String imagepath3) {
-        this.imagepath3 = imagepath3;
-    }
-
-    public String getimagepath4() {
-        return imagepath4;
-    }
-
-    public void setimagepath4(String imagepath4) {
-        this.imagepath4 = imagepath4;
     }
 
     public int getpostid1() {
