@@ -10,19 +10,19 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "post_entity")
 @EntityListeners(AuditingEntityListener.class)
-public class Post {
+public class PostEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "login_id", nullable = false)
+    @Column(name = "login_id", nullable = false, length = 25)
     private String loginid;
 
-    @Column(name = "nickname")
+    @Column(name = "nickname", length = 20)
     private String nickname;
 
-    @Column(name = "content")
+    @Column(name = "content", length = 2048)
     private String content;
 
     @LastModifiedDate
@@ -36,7 +36,7 @@ public class Post {
     @Column(name = "upload_date")
     private LocalDateTime uploaddate;
 
-    @Column(name = "title")
+    @Column(name = "title", length = 24)
     private String title;
 
     @Column(name = "image_path0")

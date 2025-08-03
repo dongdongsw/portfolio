@@ -2,7 +2,7 @@ package com.example.demo.post.service;
 
 import com.example.demo.post.dto.PostRequestDto;
 import com.example.demo.post.dto.PostResponseDto;
-import com.example.demo.post.entity.Post;
+import com.example.demo.post.entity.PostEntity;
 import com.example.demo.post.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,21 +17,21 @@ public class PostService {
     private final PostRepository postRepository;
 
     // 1. 게시글 전체 조회
-    public List<Post> getAllPosts() {
+    public List<PostEntity> getAllPosts() {
         return postRepository.findAll();
     }
 
     // 2. 게시글 상세 조회 + 조회수 증가
-    public Post getPostById(Long id) {
-        Post post = postRepository.findById(id)
+    public PostEntity getPostById(Long id) {
+        PostEntity post = postRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("해당 게시글이 존재하지 않습니다."));
         post.setViewcount(post.getViewcount() + 1);
         return postRepository.save(post);
     }
 
     // 3. 게시글 작성
-    public Post createPost(PostRequestDto dto) {
-        Post post = new Post();
+    public PostEntity createPost(PostRequestDto dto) {
+        PostEntity post = new PostEntity();
         post.setLoginid(dto.getLoginid());
         post.setNickname(dto.getNickname());
         post.setContent(dto.getContent());
@@ -48,8 +48,8 @@ public class PostService {
     }
 
     // 4. 게시글 수정
-    public Post updatePost(Long id, PostRequestDto dto) {
-        Post post = postRepository.findById(id)
+    public PostEntity updatePost(Long id, PostRequestDto dto) {
+        PostEntity post = postRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("해당 게시글이 존재하지 않습니다."));
         post.setTitle(dto.getTitle());
         post.setContent(dto.getContent());
@@ -63,7 +63,7 @@ public class PostService {
     }
 
     // 6. Post → PostResponseDto 변환
-    public PostResponseDto toResponseDto(Post post) {
+    public PostResponseDto toResponseDto(PostEntity post) {
         PostResponseDto dto = new PostResponseDto();
         dto.setId(post.getId());
         dto.setLoginid(post.getLoginid());
