@@ -10,8 +10,8 @@ import java.time.LocalDateTime;
 
 
 @Entity
+
 @Table(name = "comment", uniqueConstraints = @UniqueConstraint(columnNames = {"id", "post_id"}))
-@EntityListeners(AuditingEntityListener.class)
 public class CommentEntity {
 
     @Id
