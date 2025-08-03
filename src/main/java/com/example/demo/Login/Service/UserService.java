@@ -22,6 +22,23 @@ public class UserService {
     //회원가입
     public void signup(UserSignupRequestDto requestDto) {
         // 중복 검사
+        if (userRepository.findByLoginid(requestDto.getLoginid()).isPresent()) {
+            throw new IllegalArgumentException("이미 사용 중인 아이디입니다.");
+        }
+
+        if (userRepository.findByEmail(requestDto.getEmail()).isPresent()) {
+            throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");
+        }
+
+        UserEntity user = new UserEntity();
+        user.setLoginid(requestDto.getLoginid());
+        user.setUserPwd(passwordEncoder.encode(requestDto.getLoginpw())); // 비밀번호 암호화
+        user.setEmail(requestDto.getEmail());
+        user.setNickName(requestDto.getNickname());
+        user.setRegistDate(LocalDateTime.now());
+        user.setRole("USER");
+
+        userRepository.save(user);
     }
 
 
@@ -29,19 +46,38 @@ public class UserService {
     //로그인할 때 아이디와 비밀번호가 맞는지 체크
     public UserLoginResponseDto login(UserLoginRequestDto requestDto){
         //아이디 체크
+        UserEntity user = userRepository.findByLoginid(requestDto.getLoginid())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 아이디입니다."));
 
+        //비밀번호 체크(평문 비밀번호와 암호화된 비밀번호 비교)
+        if(!passwordEncoder.matches(requestDto.getLoginpw(), user.getUserPwd())) {
+            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+        }
+        //아이디와 비밀번호를 둘다 체크하면 리턴
+        return new UserLoginResponseDto(user.getNickName(), user.getEmail(), user.getNickName());
     }
 
     //아이디 찾기(이메일로 찾는 기능)
     public String findLoginId(String email){
 
+        UserEntity user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("이메일이 일치하지 않습니다"));
 
+
+
+        //인증이 됬으니까 아이디 알려주는 리턴
+        return user.getLoginid();
     }
 
     //비밀번호 찾기(찾기 = 비밀번호 재설정과 같다, 로그인 아이디와 이메일로 본인확인 후 새 비밀번호로 재설정)
     public void resetPassword(String loginid, String email, String newPassword){
 
+        UserEntity user = userRepository.findByLoginidAndEmail(loginid, email)
+                .orElseThrow(() -> new IllegalArgumentException("아이디 및 이메일이 정확하지 않습니다"));
 
+        user.setUserPwd(passwordEncoder.encode(newPassword));
+        user.setPwupdate(LocalDateTime.now());
+        userRepository.save(user);
 
     }
 
