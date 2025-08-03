@@ -12,8 +12,6 @@ public class PostRequestDto {
     private String loginid;
     private String nickname;
     private String content;
-    private LocalDateTime modifydate;
-    private LocalDateTime uploaddate;
     private String title;
     private int postid1;
     private int postid2;
