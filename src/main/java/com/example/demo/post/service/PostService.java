@@ -25,25 +25,25 @@ public class PostService {
     public Post getPostById(Long id) {
         Post post = postRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("해당 게시글이 존재하지 않습니다."));
-        post.setviewcount(post.getviewcount() + 1);
+        post.setViewcount(post.getViewcount() + 1);
         return postRepository.save(post);
     }
 
     // 3. 게시글 작성
     public Post createPost(PostRequestDto dto) {
         Post post = new Post();
-        post.setloginid(dto.getLoginid());
-        post.setnickname(dto.getNickname());
-        post.setcontent(dto.getContent());
-        post.settitle(dto.getTitle());
-        post.setpostid1(dto.getPostid1());
-        post.setpostid2(dto.getPostid2());
-        post.setpostid3(dto.getPostid3());
-        post.setpostid4(dto.getPostid4());
-        post.setpostid5(dto.getPostid5());
-        post.setviewcount(0);
-        post.setuploaddate(LocalDateTime.now());
-        post.setmodifydate(LocalDateTime.now());
+        post.setLoginid(dto.getLoginid());
+        post.setNickname(dto.getNickname());
+        post.setContent(dto.getContent());
+        post.setTitle(dto.getTitle());
+        post.setImagepath0(String.valueOf(dto.getImagepath0()));
+        post.setImagepath1(dto.getImagepath1());
+        post.setImagepath2(dto.getImagepath2());
+        post.setImagepath3(dto.getImagepath3());
+        post.setImagepath4(dto.getImagepath4());
+        post.setViewcount(0);
+        post.setUploaddate(LocalDateTime.now());
+        post.setModifydate(LocalDateTime.now());
         return postRepository.save(post);
     }
 
@@ -51,10 +51,9 @@ public class PostService {
     public Post updatePost(Long id, PostRequestDto dto) {
         Post post = postRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("해당 게시글이 존재하지 않습니다."));
-
-        post.settitle(dto.getTitle());
-        post.setcontent(dto.getContent());
-        post.setmodifydate(LocalDateTime.now());
+        post.setTitle(dto.getTitle());
+        post.setContent(dto.getContent());
+        post.setModifydate(LocalDateTime.now());
         return postRepository.save(post);
     }
 
@@ -63,34 +62,22 @@ public class PostService {
         postRepository.deleteById(id);
     }
 
-    // 6. 최근 본 게시글 5개 조회
-    public List<Post> getRecentPosts(Post post) {
-        List<Long> ids = List.of(
-                (long) post.getpostid1(),
-                (long) post.getpostid2(),
-                (long) post.getpostid3(),
-                (long) post.getpostid4(),
-                (long) post.getpostid5()
-        );
-        return postRepository.findByIdIn(ids);
-    }
-
-    // 7. Post → PostResponseDto 변환
+    // 6. Post → PostResponseDto 변환
     public PostResponseDto toResponseDto(Post post) {
         PostResponseDto dto = new PostResponseDto();
-        dto.setId(post.getid());
-        dto.setLoginid(post.getloginid());
-        dto.setNickname(post.getnickname());
-        dto.setContent(post.getcontent());
-        dto.setModifydate(post.getmodifydate());
-        dto.setUploaddate(post.getuploaddate());
-        dto.setViewcount(post.getviewcount());
-        dto.setTitle(post.gettitle());
-        dto.setPostid1(post.getpostid1());
-        dto.setPostid2(post.getpostid2());
-        dto.setPostid3(post.getpostid3());
-        dto.setPostid4(post.getpostid4());
-        dto.setPostid5(post.getpostid5());
+        dto.setId(post.getId());
+        dto.setLoginid(post.getLoginid());
+        dto.setNickname(post.getNickname());
+        dto.setContent(post.getContent());
+        dto.setModifydate(post.getModifydate());
+        dto.setUploaddate(post.getUploaddate());
+        dto.setViewcount(post.getViewcount());
+        dto.setTitle(post.getTitle());
+        dto.setImagepath0(post.getImagepath0());
+        dto.setImagepath1(post.getImagepath1());
+        dto.setImagepath2(post.getImagepath2());
+        dto.setImagepath3(post.getImagepath3());
+        dto.setImagepath4(post.getImagepath4());
         return dto;
     }
 }
