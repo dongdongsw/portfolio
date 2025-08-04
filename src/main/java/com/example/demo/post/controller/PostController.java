@@ -2,7 +2,7 @@ package com.example.demo.post.controller;
 
 import com.example.demo.post.dto.PostRequestDto;
 import com.example.demo.post.dto.PostResponseDto;
-import com.example.demo.post.entity.Post;
+import com.example.demo.post.entity.PostEntity;
 import com.example.demo.post.service.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
