@@ -12,13 +12,14 @@ public class PostResponseDto {
     private String loginid;
     private String nickname;
     private String content;
+    private LocalDateTime modifydate;
+    private LocalDateTime uploaddate;
+    private int viewcount;
     private String title;
+
     private String imagepath0;
     private String imagepath1;
     private String imagepath2;
     private String imagepath3;
     private String imagepath4;
-    private int viewcount;
-    private LocalDateTime uploaddate;
-    private LocalDateTime modifydate;
 }

@@ -10,6 +10,7 @@ public class PostRequestDto {
     private String nickname;
     private String content;
     private String title;
+
     private String imagepath0;
     private String imagepath1;
     private String imagepath2;
