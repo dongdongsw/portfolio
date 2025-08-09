@@ -7,6 +7,5 @@ import java.util.List;
 
 public interface PostRepository extends JpaRepository<PostEntity, Long> {
 
-    // 최근 본 게시글 ID들로 조회
     List<PostEntity> findByIdIn(List<Long> ids);
 }

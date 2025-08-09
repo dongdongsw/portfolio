@@ -29,7 +29,7 @@ public class ImageEntity {
     @JoinColumn(name = "post_id", nullable = false)
     private PostEntity post;
 
-    // === Getter & Setter ===
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
