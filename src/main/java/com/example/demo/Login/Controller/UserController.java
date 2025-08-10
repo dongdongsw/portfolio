@@ -17,7 +17,7 @@ import com.example.demo.Login.Service.UserService;
 @RequestMapping("api/user")
 public class UserController {
 
-    private final UserService userService; // 💡 여기 추가해야 함!
+    private final UserService userService;
     private final MailService mailService;
 
     //회원가입
@@ -40,7 +40,7 @@ public class UserController {
         return ResponseEntity.ok("로그인이 완료되었습니다"); //잘 보내졌으면 서버에서 확인 하는 메시지
     }
 
-    //아이디 찾기
+    //아이디 찾기(아이디존재를 검증 후, 인증 이메일 보내기)
     @GetMapping("/findid/send-auth")
     public ResponseEntity<String> findLoginId(@RequestParam String email,  HttpSession session) {
         return userService.findLoginId(email)
@@ -60,11 +60,39 @@ public class UserController {
 
     }
 
-    //아이디 찾기 할때 이메일 인증번호 검증
+
+
+    //비밀번호 찾기(아이디와 이메일을 묶어서 검증 후, 인증번호 이메일 보내기)
+    @PostMapping("/findpw/send-auth")
+    public ResponseEntity<String> sendPwAuthCode(@RequestParam String loginid,
+                                                 @RequestParam String email,
+                                                 HttpSession session) {
+
+        boolean exists = userService.checkUserExists(loginid, email);
+
+        if (!exists) {
+            return ResponseEntity.badRequest().body("계정 정보가 일치하지 않습니다.");
+        }
+
+
+        String sendpwauth = mailService.sendMail(new MailRequestDto(email));
+
+        session.setAttribute("pwAuthCode", sendpwauth);
+        session.setAttribute("pwAuthLoginId", loginid);
+        session.setAttribute("pwAuthEmail", email);
+
+        session.setMaxInactiveInterval(300); //세션만료 5분
+
+
+        return ResponseEntity.ok("인증번호가 이메일로 발송되었습니다."); //잘 보내졌으면 서버에서 확인 하는 메시지
+    }
+
+    //아이디 찾기(이메일 인증번호 검증)
     @PostMapping("/findid/verify-id")
     public ResponseEntity<String> verifyIdCode(@RequestParam String code, HttpSession session) {
         String savedCode = (String) session.getAttribute("idAuthCode");
 
+        //
         if (savedCode != null && savedCode.equals(code)) {
             String loginId = (String) session.getAttribute("idAuthLoginId");
 
@@ -79,46 +107,25 @@ public class UserController {
         return ResponseEntity.badRequest().body("인증번호가 일치하지 않습니다."); //잘 보내졌으면 서버에서 확인 하는 메시지
     }
 
-    @PostMapping("/findpw/send-auth")
-    public ResponseEntity<String> sendPwAuthCode(@RequestParam String loginid,
-                                                 @RequestParam String email,
-                                                 HttpSession session) {
 
-        boolean exists = userService.checkUserExists(loginid, email);
-
-        if (!exists) {
-            return ResponseEntity.badRequest().body("계정 정보가 일치하지 않습니다.");
-        }
-
-        String sendpwauth = mailService.sendMail(new MailRequestDto(email));
-
-        session.setAttribute("pwAuthCode", sendpwauth);
-        session.setAttribute("pwAuthLoginId", loginid);
-        session.setAttribute("pwAuthEmail", email);
-
-        session.setMaxInactiveInterval(300); //세션만료 5분
-
-
-        return ResponseEntity.ok("인증번호가 이메일로 발송되었습니다."); //잘 보내졌으면 서버에서 확인 하는 메시지
-    }
-
-
-    //비밀번호 재설정
+    //비밀번호 찾기(이메일 인증번호 검증 후, 비밀번호 재설정)
     @PostMapping("/findpw/verify-pw")
     public ResponseEntity<String> resetPassword(@RequestParam String code,
                                                 @RequestParam String newPassword,
                                                 HttpSession session) {
 
+        // 사용자의 세션 정보를 불러옴
         String sessionauth = (String) session.getAttribute("pwAuthCode");
         String loginid = (String) session.getAttribute("pwAuthLoginId");
         String email = (String) session.getAttribute("pwAuthEmail");
 
-        if (sessionauth == null || !sessionauth.equals(code)) {//세션에 저장된 인증번호랑 사용자가 입력한 인증번호랑 비교
+        //세션에 저장된 인증번호랑 사용자가 입력한 인증번호랑 비교
+        if (sessionauth == null || !sessionauth.equals(code)) {
 
             return ResponseEntity.badRequest().body("인증번호가 일치하지 않습니다."); //잘 보내졌으면 서버에서 확인 하는 메시지
 
         }
-
+        // 서비스에서 검증하고 나온 값인 true/false를  updated에 넣는다.
         boolean updated = userService.resetPassword(loginid, email, newPassword);
 
         if (!updated) {

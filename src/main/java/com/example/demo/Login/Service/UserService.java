@@ -36,7 +36,7 @@ public class UserService {
         user.setEmail(requestDto.getEmail());
         user.setNickName(requestDto.getNickname());
         user.setRegistDate(LocalDateTime.now());
-        user.setRole("USER");
+        user.setRole("USER"); //권한 설정
 
         userRepository.save(user);
     }
