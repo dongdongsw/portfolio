@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "user")
 @EntityListeners(AuditingEntityListener.class) //@LastModifiedDate, @CreatedDate를 쓰기 위해서 추가 해야함
-public class User {
+public class UserEntity {
 
     // Getters and Setters
 
@@ -22,13 +22,13 @@ public class User {
     @Column(name = "login_id",unique = true, length = 25, nullable = false, updatable = false)
     private String loginid;  // 아이디
 
-    @Column(name = "login_pw", length = 25, nullable = false) //unique는 사용하지 않음 Security를 사용해서 암호화 하기
+    @Column(name = "login_pw", length = 255, nullable = false) //unique는 사용하지 않음 Security를 사용해서 암호화 하기
     private String loginpw;  // 비밀번호
 
     @Column(unique = true, length = 20, nullable = false)
     private String nickname;  // 닉네임
 
-    @Column (nullable = false, unique = true)
+    @Column (nullable = false, unique = true, updatable = false)
     private String email;  // 이메일
 
     @Column (nullable = false)
@@ -39,7 +39,6 @@ public class User {
     private LocalDateTime registdate;  // 회원가입 날짜
 
     @LastModifiedDate
-    @Column (nullable = false)
     private LocalDateTime pwupdate;  // 비밀번호 재설정 날짜
 
 

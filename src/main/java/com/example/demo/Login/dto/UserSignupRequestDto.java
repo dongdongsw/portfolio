@@ -9,5 +9,5 @@ public class UserSignupRequestDto {
     private String loginid;
     private String loginpw;
     private String email;
-    private String nickName;
+    private String nickname;
 }
