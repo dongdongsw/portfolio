@@ -29,7 +29,6 @@ public class CommentService {
         comment.setLoginId(requestDto.getLoginId());
         comment.setNickname(requestDto.getNickname());
         comment.setContent(requestDto.getContent());
-        comment.setAuthor(requestDto.getAuthor());
 
         CommentEntity saved = commentRepository.save(comment);
 
@@ -44,7 +43,6 @@ public class CommentService {
 
         comment.setContent(requestDto.getContent());
         comment.setNickname(requestDto.getNickname());
-        comment.setAuthor(requestDto.getAuthor());
         CommentEntity updated = commentRepository.save(comment);
 
         return toResponseDto(updated);
@@ -80,8 +78,7 @@ public class CommentService {
                 entity.getNickname(),
                 entity.getContent(),
                 entity.getUploadDate(),
-                entity.getModifyDate(),
-                entity.getAuthor()
+                entity.getModifyDate()
         );
     }
 }

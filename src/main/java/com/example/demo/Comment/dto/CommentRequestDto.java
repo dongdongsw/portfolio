@@ -5,16 +5,14 @@ public class CommentRequestDto {
     private String loginId;
     private String nickname;
     private String content;
-    private String author;
 
     public CommentRequestDto() {}
 
-    public CommentRequestDto(int postId, String loginId, String nickname, String content, String author) {
+    public CommentRequestDto(int postId, String loginId, String nickname, String content) {
         this.postId = postId;
         this.loginId = loginId;
         this.nickname = nickname;
         this.content = content;
-        this.author = author;
     }
 
     // Getter & Setter
@@ -28,8 +26,4 @@ public class CommentRequestDto {
     public void setNickname(String nickname) { this.nickname = nickname; }
 
     public String getContent() { return content; }
-    public void setContent(String content) { this.content = content; }
-
-    public String getAuthor() { return author; }
-    public void setAuthor(String author) { this.author = author; }
-}
+    public void setContent(String content) { this.content = content; }}

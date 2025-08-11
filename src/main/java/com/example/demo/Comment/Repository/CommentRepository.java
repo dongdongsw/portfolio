@@ -15,12 +15,6 @@ public interface CommentRepository extends JpaRepository<CommentEntity, Integer>
     // 작성자(loginId) 별 댓글 목록 조회
     List<CommentEntity> findByLoginId(String loginId);
 
-    // 닉네임(nickname) 별 댓글 목록 조회
-    List<CommentEntity> findByNickname(String nickname);
-
-    // 내용(keyword)이 포함된 댓글 검색
-    List<CommentEntity> findByContentContaining(String keyword);
-
     // 게시글(postId) 기준, 업로드 순 최신순 조회
     List<CommentEntity> findByPostIdOrderByUploadDateDesc(int postId);
 

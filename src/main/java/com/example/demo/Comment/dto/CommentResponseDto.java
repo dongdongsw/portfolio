@@ -10,12 +10,11 @@ public class CommentResponseDto {
     private String content;
     private LocalDateTime uploadDate;
     private LocalDateTime modifyDate;
-    private String author;
 
     public CommentResponseDto() {}
 
     public CommentResponseDto(int id, int postId, String loginId, String nickname,
-                              String content, LocalDateTime uploadDate, LocalDateTime modifyDate, String author) {
+                              String content, LocalDateTime uploadDate, LocalDateTime modifyDate) {
         this.id = id;
         this.postId = postId;
         this.loginId = loginId;
@@ -23,7 +22,6 @@ public class CommentResponseDto {
         this.content = content;
         this.uploadDate = uploadDate;
         this.modifyDate = modifyDate;
-        this.author = author;
     }
 
     // Getter & Setter
@@ -48,6 +46,4 @@ public class CommentResponseDto {
     public LocalDateTime getModifyDate() { return modifyDate; }
     public void setModifyDate(LocalDateTime modifyDate) { this.modifyDate = modifyDate; }
 
-    public String getAuthor() { return author; }
-    public void setAuthor(String author) { this.author = author; }
 }

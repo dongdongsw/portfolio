@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 
 
 @Entity
-
+@EntityListeners(AuditingEntityListener.class)
 @Table(name = "comment", uniqueConstraints = @UniqueConstraint(columnNames = {"id", "post_id"}))
 public class CommentEntity {
 
@@ -37,9 +37,6 @@ public class CommentEntity {
     @LastModifiedDate
     @Column(name = "modify_date")
     private LocalDateTime modifyDate;
-
-    @Column(name = "author", length = 30)
-    private String author;
 
     public CommentEntity() {
     }
@@ -98,13 +95,5 @@ public class CommentEntity {
 
     public void setModifyDate(LocalDateTime modifyDate) {
         this.modifyDate = modifyDate;
-    }
-
-    public String getAuthor() {
-        return author;
-    }
-
-    public void setAuthor(String author) {
-        this.author = author;
     }
 }
