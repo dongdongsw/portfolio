@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>게시글 수정</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f4f4; }
+    .container { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); max-width: 900px; margin: auto; }
+    h1 { margin-top: 0; }
+    label { display: block; margin-bottom: 5px; font-weight: bold; }
+    input[type="text"], textarea { width: calc(100% - 22px); padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 4px; }
+    input[type="file"] { margin-bottom: 10px; }
+    .thumbs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+    .thumbs img { max-width: 130px; height: auto; border: 1px solid #eee; }
+    .btn { background-color: #4CAF50; color: #fff; border: none; padding: 10px 14px; border-radius: 4px; cursor: pointer; margin-right: 8px; }
+    .btn:hover { background-color: #45a049; }
+    .secondary { background-color: #666; }
+    .secondary:hover { background-color: #555; }
+    .response-box { margin-top: 16px; padding: 12px; background-color: #e9e9e9; border-radius: 4px; border: 1px solid #ddd; word-break: break-all; }
+    .error-message { color: red; margin-top: 10px; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>게시글 수정</h1>
+
+  <div style="margin-bottom:10px;">
+    <button class="btn secondary" onclick="location.href='posts_list.html'">목록</button>
+  </div>
+
+  <form id="editForm" enctype="multipart/form-data">
+    <input type="hidden" id="postId" />
+
+    <label for="title">제목</label>
+    <input type="text" id="title" name="title" required />
+
+    <label for="loginid">로그인 ID</label>
+    <input type="text" id="loginid" name="loginid" required />
+
+    <label for="nickname">닉네임</label>
+    <input type="text" id="nickname" name="nickname" />
+
+    <label for="content">내용</label>
+    <textarea id="content" name="content" rows="6"></textarea>
+
+    <div>
+      <div><strong>현재 이미지</strong></div>
+      <div id="thumbs" class="thumbs"></div>
+    </div>
+
+    <label>이미지 교체(선택, 비워두면 기존 유지)</label>
+    <input type="file" name="files" accept="image/*" /><br />
+    <input type="file" name="files" accept="image/*" /><br />
+    <input type="file" name="files" accept="image/*" /><br />
+    <input type="file" name="files" accept="image/*" /><br />
+    <input type="file" name="files" accept="image/*" /><br />
+
+    <div>
+      <button type="submit" class="btn">수정 저장</button>
+    </div>
+  </form>
+
+  <div id="response" class="response-box">서버 응답: <span id="responseMessage"></span></div>
+  <div id="errorMessage" class="error-message"></div>
+</div>
+
+<script>
+  const API_BASE = 'http://localhost:8080';
+
+  function getIdFromQuery() {
+    const u = new URL(location.href);
+    return u.searchParams.get('id');
+  }
+
+  function renderThumbs(post) {
+    const thumbs = document.getElementById('thumbs');
+    thumbs.innerHTML = '';
+    [post.imagepath0, post.imagepath1, post.imagepath2, post.imagepath3, post.imagepath4]
+      .filter(Boolean)
+      .forEach((src, i) => {
+        const img = document.createElement('img');
+        img.src = src; img.alt = `이미지 ${i+1}`;
+        thumbs.appendChild(img);
+      });
+  }
+
+  async function loadPost(id) {
+    try {
+      const res = await fetch(`${API_BASE}/api/posts/post_detail/${id}`, { headers: { 'Accept': 'application/json' }});
+      if (!res.ok) throw new Error(await res.text());
+      const post = await res.json();
+
+      document.getElementById('postId').value = post.id;
+      document.getElementById('title').value = post.title ?? '';
+      document.getElementById('loginid').value = post.loginid ?? '';
+      document.getElementById('nickname').value = post.nickname ?? '';
+      document.getElementById('content').value = post.content ?? '';
+      renderThumbs(post);
+    } catch (e) {
+      alert('게시글 불러오기 실패: ' + e.message);
+      console.error(e);
+      location.href = 'post_list.html';
+    }
+  }
+
+  document.getElementById('editForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const id = document.getElementById('postId').value;
+    const fd = new FormData(e.target);
+
+    try {
+      const res = await fetch(`${API_BASE}/api/posts/post_update/${id}`, {
+        method: 'POST',
+        body: fd
+      });
+      if (!res.ok) throw new Error(await res.text());
+      const text = await res.text();
+      document.getElementById('responseMessage').textContent = text || '수정 완료';
+      document.getElementById('errorMessage').textContent = '';
+      alert('수정 완료');
+      location.href = 'post_list.html';
+    } catch (err) {
+      document.getElementById('responseMessage').textContent = '';
+      document.getElementById('errorMessage').textContent = `오류: ${err.message}`;
+      alert('수정 실패: ' + err.message);
+      console.error(err);
+    }
+  });
+
+  window.onload = () => {
+    const id = getIdFromQuery();
+    if (!id) {
+      alert('잘못된 접근: id가 없습니다.');
+      location.href = 'post_list.html';
+      return;
+    }
+    loadPost(id);
+  };
+</script>
+</body>
+</html>
