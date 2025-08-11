@@ -39,7 +39,6 @@ public class SecurityConfig {
                         // 그 외도 개발 중에는 모두 허용
                         .anyRequest().permitAll()
                 );
-
         return http.build();
     }
 }

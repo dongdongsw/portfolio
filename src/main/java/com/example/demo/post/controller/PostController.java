@@ -57,4 +57,5 @@ public class PostController {
         postService.deletePost(id);
         return ResponseEntity.ok("삭제 완료");
     }
+
 }
