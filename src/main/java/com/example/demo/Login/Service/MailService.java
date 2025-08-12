@@ -20,6 +20,7 @@ public class MailService {
     @Value("${spring.mail.username}")
     private String fromEmail;
 
+
     public String sendMail(MailRequestDto dto){
         String authCode = generateRandomNumber(7);
 

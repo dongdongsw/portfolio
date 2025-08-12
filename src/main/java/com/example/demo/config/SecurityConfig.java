@@ -47,6 +47,7 @@ public class SecurityConfig {
                         //---------------------------
                         "/api",
                         "/css/**",
+
                         "/js/**",
                         "/images/**").permitAll() //이 경로는 누구나 접근 허용이 가능(로그인 하지 않은 사용자들도 인증없이)
                 .anyRequest().authenticated() //그 외에는 모든 접근은 로그인된 사용자만 허락함

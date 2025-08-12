@@ -25,6 +25,7 @@ public class UserService {
             throw new IllegalArgumentException("이미 사용 중인 아이디입니다.");
         }
 
+
         //이메일 중복 검사
         if (userRepository.findByEmail(requestDto.getEmail()).isPresent()) {
             throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");

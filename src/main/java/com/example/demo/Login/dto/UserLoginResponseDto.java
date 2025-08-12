@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class UserLoginResponseDto {
 
+
     private String loginid;  // 아이디
     private String loginpw;  // 비밀번호
     private String nickname;

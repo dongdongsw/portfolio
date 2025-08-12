@@ -35,6 +35,7 @@ public class CommentService {
         return toResponseDto(saved);
     }
 
+
     // 댓글 수정
     @Transactional
     public CommentResponseDto updateComment(int commentId, CommentRequestDto requestDto) {

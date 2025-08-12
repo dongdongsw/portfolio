@@ -15,6 +15,7 @@ public class UserEntity {
 
     // Getters and Setters
 
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;  // 회원 고유번호

@@ -25,6 +25,7 @@ public class CommentController {
         return commentService.createComment(requestDto);
     }
 
+
     // 게시글의 전체 댓글 목록 조회
     @GetMapping("/post/{postId}")
     public List<CommentResponseDto> getByPost(@PathVariable int postId) {

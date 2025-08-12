@@ -12,4 +12,5 @@ public class MailRequestDto {
     public String toMail;
 
 
+
 }

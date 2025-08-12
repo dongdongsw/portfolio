@@ -13,6 +13,7 @@ public class CommentResponseDto {
 
     public CommentResponseDto() {}
 
+
     public CommentResponseDto(int id, int postId, String loginId, String nickname,
                               String content, LocalDateTime uploadDate, LocalDateTime modifyDate) {
         this.id = id;

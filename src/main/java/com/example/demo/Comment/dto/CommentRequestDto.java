@@ -15,6 +15,7 @@ public class CommentRequestDto {
         this.content = content;
     }
 
+
     // Getter & Setter
     public int getPostId() { return postId; }
     public void setPostId(int postId) { this.postId = postId; }

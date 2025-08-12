@@ -12,6 +12,7 @@ import lombok.Setter;
 @AllArgsConstructor
 public class UserLoginRequestDto {
 
+
     private String loginid;  // 아이디
     private String loginpw;  // 비밀번호
 

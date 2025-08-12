@@ -18,6 +18,7 @@ public class PostController {
     private final PostService postService;
 
 
+
     // 1) 글 작성
     // (A) 멀티파트: FormData(이미지 포함) 전송용
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

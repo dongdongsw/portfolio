@@ -16,6 +16,7 @@ public class ImageEntity {
     @Column(name = "image_path1")
     private String imagepath1;
 
+
     @Column(name = "image_path2")
     private String imagepath2;
 

@@ -22,6 +22,7 @@ public class PostEntity {
     @Column(name = "nickname", length = 20)
     private String nickname;
 
+
     @Column(name = "content", length = 2048)
     private String content;
 

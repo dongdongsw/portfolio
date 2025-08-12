@@ -30,6 +30,7 @@ public class CommentEntity {
     @Column(name = "content", length = 50)
     private String content;
 
+
     @CreatedDate
     @Column(name = "upload_date")
     private LocalDateTime uploadDate;

@@ -17,6 +17,7 @@ public class PostResponseDto {
     private int viewcount;
     private String title;
 
+
     private String imagepath0;
     private String imagepath1;
     private String imagepath2;
