@@ -38,6 +38,13 @@ public class SecurityConfig {
                         "/api/post",
                         "/api/post/{id}",
                         "/api/posts/{postId}/comment/view",
+                        //---------------------------
+                        "/api/comments/commentscreate",
+                        "/api/comments/post/**",
+                        "/api/comments/singleview/**",
+                        "/api/comments/edit/**",
+                        "/api/comments/delete/**",
+                        //---------------------------
                         "/api",
                         "/css/**",
                         "/js/**",
