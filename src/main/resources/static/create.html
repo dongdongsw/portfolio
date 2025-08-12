@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <title>게시글 작성</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 800px; margin: 24px auto; }
+    label { display:block; margin:12px 0 6px; font-weight:600; }
+    input, textarea { width:100%; padding:10px; border:1px solid #ddd; border-radius:8px; box-sizing:border-box; }
+    textarea { min-height:160px; }
+    .actions { margin-top:16px; display:flex; gap:10px; }
+    button { padding:10px 14px; border:1px solid #ccc; border-radius:8px; background:#fff; cursor:pointer; }
+  </style>
+</head>
+<body>
+<h1>새 게시글 작성</h1>
+<form id="form" enctype="multipart/form-data">
+  <label for="loginid">로그인ID</label>
+  <input id="loginid" name="loginid" required />
+
+  <label for="nickname">닉네임</label>
+  <input id="nickname" name="nickname" required />
+
+  <label for="title">제목</label>
+  <input id="title" name="title" required />
+
+  <label for="content">내용</label>
+  <textarea id="content" name="content" required></textarea>
+
+  <label>이미지 파일 (최대 5개)</label>
+  <input type="file" name="files" accept="image/*" /><br />
+  <input type="file" name="files" accept="image/*" /><br />
+  <input type="file" name="files" accept="image/*" /><br />
+  <input type="file" name="files" accept="image/*" /><br />
+  <input type="file" name="files" accept="image/*" /><br />
+
+  <div class="actions">
+    <button type="submit">작성</button>
+    <button type="button" onclick="location.href='list.html'">목록</button>
+  </div>
+</form>
+
+<script>
+  const API_BASE = "http://localhost:8080";
+
+  document.getElementById("form").addEventListener("submit", e => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+
+    fetch(`${API_BASE}/api/posts`, {
+      method: "POST",
+      body: formData
+    })
+      .then(res => res.text())
+      .then(msg => {
+        alert(msg);
+        location.href = "list.html";
+      })
+      .catch(err => alert("작성 실패: " + err));
+  });
+</script>
+</body>
+</html>

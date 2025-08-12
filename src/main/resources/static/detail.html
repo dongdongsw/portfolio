@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8" />
+    <title>게시글 상세</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 24px auto; }
+        .info { margin-bottom: 12px; color: #555; }
+        img.post-img { max-width: 100%; margin: 8px 0; border-radius: 6px; }
+        .actions { margin-top: 16px; display: flex; gap: 8px; }
+        button { padding: 8px 12px; border:1px solid #ccc; border-radius: 4px; cursor: pointer; background: #fff; }
+    </style>
+</head>
+<body>
+<h1 id="title"></h1>
+<div class="info" id="meta"></div>
+<div id="content"></div>
+<div id="images"></div>
+
+<div class="actions">
+    <button onclick="location.href='list.html'">목록</button>
+    <button id="editBtn">수정</button>
+    <button id="deleteBtn">삭제</button>
+</div>
+
+<script>
+    const API_BASE = "http://localhost:8080";
+    const postId = new URLSearchParams(location.search).get("id");
+
+    fetch(`${API_BASE}/api/posts/detail/${postId}`)
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById("title").textContent = data.title;
+        const nickname = data.nickname || data.loginid;
+
+        // 수정일이 있을 때만 붙이기
+        const modifyHtml = data.modifydate ? ` / 수정일: <span>${data.modifydate}</span>` : "";
+
+        document.getElementById("meta").innerHTML =
+          `작성자: <span>${nickname}</span> / 작성일: <span>${data.uploaddate || '-'}</span>${modifyHtml} / 조회수: <span>${data.viewcount ?? 0}</span>`;
+
+        document.getElementById("content").innerHTML = `<p>${data.content ?? ''}</p>`;
+
+        const imgDiv = document.getElementById("images");
+        for (let i = 0; i <= 4; i++) {
+          const path = data[`imagepath${i}`];
+          if (path) {
+            const img = document.createElement("img");
+            img.src = path + `?v=${Date.now()}`; // 캐시 방지
+            img.className = "post-img";
+            img.style.maxWidth = "100%";
+            img.style.margin = "8px 0";
+            img.style.borderRadius = "6px";
+            imgDiv.appendChild(img);
+          }
+        }
+
+        document.getElementById("editBtn").onclick = () => location.href = `modify.html?id=${postId}`;
+        document.getElementById("deleteBtn").onclick = () => {
+          if (confirm("정말 삭제하시겠습니까?")) {
+            fetch(`${API_BASE}/api/posts/delete/${postId}`, { method: "DELETE" })
+              .then(res => res.text())
+              .then(msg => { alert(msg); location.href = "list.html"; });
+          }
+        };
+      });
+</script>
+</body>
+</html>

@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8" />
+    <title>게시글 목록</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 900px; margin: 24px auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 10px; border-bottom: 1px solid #ddd; text-align: left; }
+        th { background-color: #f4f4f4; }
+        img.thumb { width: 60px; height: 60px; object-fit: cover; border-radius: 4px; }
+        a { color: #0366d6; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .top-bar { margin-bottom: 16px; }
+        .top-bar button { padding: 8px 12px; }
+    </style>
+</head>
+<body>
+<h1>게시글 목록</h1>
+<div class="top-bar">
+    <button onclick="location.href='create.html'">새 글 작성</button>
+</div>
+<table>
+    <thead>
+    <tr>
+        <th>번호</th>
+        <th>제목</th>
+        <th>작성자</th>
+        <th>조회수</th>
+        <th>대표이미지</th>
+    </tr>
+    </thead>
+    <tbody id="postList"></tbody>
+</table>
+
+<script>
+    const API_BASE = "http://localhost:8080";
+
+    fetch(`${API_BASE}/api/posts`)
+      .then(res => res.json())
+      .then(posts => {
+        const tbody = document.getElementById("postList");
+        tbody.innerHTML = "";
+        posts.forEach(p => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${p.id}</td>
+            <td><a href="detail.html?id=${p.id}">${p.title}</a></td>
+            <td>${p.nickname || p.loginid}</td>
+            <td>${p.viewcount ?? 0}</td>
+            <td>${p.imagepath0 ? `<img class="thumb" src="${p.imagepath0}" style="width:60px;height:60px;object-fit:cover;border-radius:4px">` : '-'}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      });
+</script>
+</body>
+</html>
