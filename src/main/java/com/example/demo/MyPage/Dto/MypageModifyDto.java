@@ -12,6 +12,7 @@ import lombok.Setter;
 public class MypageModifyDto {
     private String email;
     private String nickname;
+    private String loginpw;
 
 
 
