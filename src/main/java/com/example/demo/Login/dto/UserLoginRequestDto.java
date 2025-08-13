@@ -15,6 +15,7 @@ public class UserLoginRequestDto {
 
     private String loginid;  // 아이디
     private String loginpw;  // 비밀번호
+    private String nickname;
 
 
 

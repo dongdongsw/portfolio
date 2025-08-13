@@ -1,4 +1,4 @@
-package com.example.demo.Comment.Dto;
+package com.example.demo.Comment.dto;
 
 public class CommentRequestDto {
     private int postId;
