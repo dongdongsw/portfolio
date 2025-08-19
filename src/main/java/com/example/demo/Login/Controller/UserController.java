@@ -93,7 +93,7 @@ public class UserController {
     public ResponseEntity<String> verifyIdCode(@RequestParam String code, HttpSession session) {
         String savedCode = (String) session.getAttribute("idAuthCode");
 
-        //
+
         if (savedCode != null && savedCode.equals(code)) {
             String loginId = (String) session.getAttribute("idAuthLoginId");
 

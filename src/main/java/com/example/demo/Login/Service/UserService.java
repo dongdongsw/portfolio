@@ -25,7 +25,6 @@ public class UserService {
             throw new IllegalArgumentException("이미 사용 중인 아이디입니다.");
         }
 
-
         //이메일 중복 검사
         if (userRepository.findByEmail(requestDto.getEmail()).isPresent()) {
             throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");
@@ -83,5 +82,28 @@ public class UserService {
                     return true;
                 })
                 .orElse(false);
+    }
+
+    // --- MyPageService에서 활용할 수 있는 중복 확인 메서드 추가 ---
+
+    // 이메일 중복 확인
+    public boolean isEmailDuplicated(String email) {
+        return userRepository.findByEmail(email).isPresent();
+    }
+
+    // 닉네임 중복 확인
+    public boolean isNicknameDuplicated(String nickname) {
+        return userRepository.findByNickname(nickname).isPresent();
+    }
+
+    // 로그인 아이디 중복 확인 (이미 signup에서 사용 중)
+    public boolean isLoginIdDuplicated(String loginId) {
+        return userRepository.findByLoginid(loginId).isPresent();
+    }
+
+    // 유저 엔티티 조회 (MyPageService에서 유저 정보 가져올 때 활용)
+    public UserEntity getUserByLoginId(String loginId) {
+        return userRepository.findByLoginid(loginId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다. (loginId: " + loginId + ")"));
     }
 }

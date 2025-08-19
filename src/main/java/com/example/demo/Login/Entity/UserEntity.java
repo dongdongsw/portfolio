@@ -75,4 +75,10 @@ public class UserEntity {
     public LocalDateTime getRegistDate() { return registdate; }
 
     public void setRegistDate(LocalDateTime regist_date) { this.registdate = regist_date; }
+
+    // 비밀번호를 바꾸면 날짜도 자동으로 없데이트 할 수 있게 설정하는 메소드
+    public void updatePassword(String encodedPassword) {
+        this.loginpw = encodedPassword; // 전달받은 암호화된 비밀번호로 업데이트
+        this.pwupdate = LocalDateTime.now(); // 비밀번호 업데이트 시 pwupdate 날짜도 현재 시간으로 업데이트
+    }
 }
