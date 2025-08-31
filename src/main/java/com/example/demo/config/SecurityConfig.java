@@ -4,8 +4,11 @@ package com.example.demo.Config;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -18,6 +21,11 @@ public class SecurityConfig {
     @Bean
     public PasswordEncoder pawordssEncoder() {     //패스 워드 암호화 관련 메소드
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+        return authenticationConfiguration.getAuthenticationManager();
     }
 
     @Bean
@@ -34,6 +42,8 @@ public class SecurityConfig {
                         "/api/user/findpw/send-auth",
                         "/api/user/findpw/verify-pw",
                         "/api/user/logout",
+                        //---------------------------
+                        "/api/mypage/**",
                         //---------------------------
                         "/api/post",
                         "/api/post/{id}",
@@ -58,6 +68,10 @@ public class SecurityConfig {
 //                    .loginProcessingUrl("/api/user/login") //로그인 처리하는 페이지
 //                    .defaultSuccessUrl("/api/") //로그인 성공하면 홈으로 이동
 //                    .failureUrl("/api/user/login?error=true") //로그인 실패시 이동되는 경로
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED) // 세션이 필요할 때 생성 (기본값)
+                        .sessionFixation().migrateSession() // 세션 고정 공격 방어 (세션 ID 변경)
+                )
                 .httpBasic().disable()
                 .formLogin().disable()
 //                .and()//formLogi n()의 설정을 마무리하고 다음으로
