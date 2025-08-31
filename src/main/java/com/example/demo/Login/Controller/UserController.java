@@ -8,6 +8,10 @@ import com.example.demo.Login.dto.UserSignupRequestDto;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import com.example.demo.Login.Service.UserService;
 
@@ -21,6 +25,7 @@ public class UserController {
 
     private final UserService userService;
     private final MailService mailService;
+    private final AuthenticationManager authenticationManager;
 
 
     //회원가입
@@ -31,16 +36,33 @@ public class UserController {
         return ResponseEntity.ok("회원가입이 완료되었습니다."); //잘 보내졌으면 서버에서 확인 하는 메시지
     }
 
-    //로그인
+//    //로그인
+//    @PostMapping("/login")
+//    public ResponseEntity<String> login(@RequestBody UserLoginRequestDto requestDto, HttpSession session) {
+//        UserLoginResponseDto responseDto = userService.login(requestDto);
+//
+//        session.setAttribute("loginUser", responseDto); // 세션에  loginid, loginpw, nickname 저장
+//
+//        session.setMaxInactiveInterval(1800); // 30분 세션만료
+//
+//        return ResponseEntity.ok("로그인이 완료되었습니다"); //잘 보내졌으면 서버에서 확인 하는 메시지
+//    }
+
     @PostMapping("/login")
     public ResponseEntity<String> login(@RequestBody UserLoginRequestDto requestDto, HttpSession session) {
-        UserLoginResponseDto responseDto = userService.login(requestDto);
+        UsernamePasswordAuthenticationToken authToken =
+                new UsernamePasswordAuthenticationToken(requestDto.getLoginid(), requestDto.getLoginpw());
 
-        session.setAttribute("loginUser", responseDto); // 세션에  loginid, loginpw, nickname 저장
+        Authentication authentication = authenticationManager.authenticate(authToken);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        session.setMaxInactiveInterval(1800); // 30분 세션만료
+        // 세션에 SecurityContext 저장 (요청 간 인증 유지)
+        session.setAttribute(
+                org.springframework.security.web.context.HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY,
+                SecurityContextHolder.getContext()
+        );
 
-        return ResponseEntity.ok("로그인이 완료되었습니다"); //잘 보내졌으면 서버에서 확인 하는 메시지
+        return ResponseEntity.ok("로그인이 완료되었습니다");
     }
 
     //아이디 찾기(아이디존재를 검증 후, 인증 이메일 보내기)
