@@ -10,30 +10,47 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import jakarta.persistence.EntityManager;          // ✅ 추가
+import jakarta.persistence.PersistenceContext;   // ✅ 추가
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDateTime;                  // ✅ 추가
 import java.util.List;
 import java.util.UUID;
-
 
 @Service
 @RequiredArgsConstructor
 public class PostService {
 
-
     private final PostRepository postRepository;
     private final String uploadDir = System.getProperty("user.dir") + "/uploads/images/";
 
+    @PersistenceContext                      // ✅ 추가: JPQL 업데이트용
+    private EntityManager em;
 
     public List<PostEntity> getAllPosts() {
         return postRepository.findAll();
     }
 
+    /**
+     * ✅ 상세 조회 시 modifydate가 바뀌지 않도록 save() 제거
+     *    - 조회수만 JPQL 벌크 업데이트로 +1
+     *    - 그 다음 다시 조회해서 반환
+     */
+    @Transactional
     public PostEntity getPostById(Long id) {
-        PostEntity post = postRepository.findById(id)
+        // 존재 여부 확인
+        postRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("해당 게시글이 존재하지 않습니다."));
-        post.setViewcount(post.getViewcount() + 1);
-        return postRepository.save(post);
+
+        // 조회수만 +1 (엔티티 더티체크/업데이트 타임스탬프와 무관)
+        em.createQuery("update PostEntity p set p.viewcount = p.viewcount + 1 where p.id = :id")
+                .setParameter("id", id)
+                .executeUpdate();
+
+        // 증가된 값 포함하여 다시 반환
+        return postRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("해당 게시글이 존재하지 않습니다."));
     }
 
     @Transactional
@@ -92,6 +109,9 @@ public class PostService {
                 .orElseThrow(() -> new RuntimeException("해당 게시글이 존재하지 않습니다."));
         post.setTitle(dto.getTitle());
         post.setContent(dto.getContent());
+
+        // ✅ 수정할 때만 최종 수정일 갱신
+        post.setModifydate(LocalDateTime.now());
 
         if (dto.getFiles() != null && !dto.getFiles().isEmpty()) {
             ImageEntity existingImage = post.getImageEntity();

@@ -37,7 +37,10 @@ public class SecurityConfig {
                         "/api/user/findpw/verify-pw",
                         "/api/user/logout",
                         //---------------------------
-                        "/api/post",
+                        "/api/posts",
+                        "/api/posts/detail/**",
+                        "/api/posts/modify/**",
+                        "/api/posts/delete/**",
                         "/api/post/{id}",
                         "/api/posts/{postId}/comment/view",
                         //---------------------------
