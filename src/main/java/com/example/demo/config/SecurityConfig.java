@@ -24,8 +24,6 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf().disable()   //api 개발할 때는 dusable로 해놓고 꺼놓고 실제 개발시에는 enable로 수정
-                .cors()
-                .and()// CORS 활성화
                 .authorizeHttpRequests() //경로에 어떤 권한을 줄지 설정
                 .requestMatchers(
 //                            --------------------------로그인
@@ -37,10 +35,7 @@ public class SecurityConfig {
                         "/api/user/findpw/verify-pw",
                         "/api/user/logout",
                         //---------------------------
-                        "/api/posts",
-                        "/api/posts/detail/**",
-                        "/api/posts/modify/**",
-                        "/api/posts/delete/**",
+                        "/api/post",
                         "/api/post/{id}",
                         "/api/posts/{postId}/comment/view",
                         //---------------------------
