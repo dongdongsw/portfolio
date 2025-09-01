@@ -29,6 +29,7 @@ public class PostService {
     @PersistenceContext
     private EntityManager em;
 
+
     public List<PostEntity> getAllPosts() {
         return postRepository.findAll();
     }
