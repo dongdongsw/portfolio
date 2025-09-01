@@ -38,11 +38,9 @@ public class PostService {
     public PostEntity getPostById(Long id) {
         postRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("해당 게시글이 존재하지 않습니다."));
-
         em.createQuery("update PostEntity p set p.viewcount = p.viewcount + 1 where p.id = :id")
                 .setParameter("id", id)
                 .executeUpdate();
-
         return postRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("해당 게시글이 존재하지 않습니다."));
     }
@@ -60,17 +58,25 @@ public class PostService {
 
         ImageEntity image = new ImageEntity();
 
-        // 새 파일 저장 (업로드 순서 유지)
+        // 1) 이번 업로드 새 파일 저장
         List<String> newPaths = saveFiles(dto.getFiles());
 
-        // 본문에서 첫 번째 이미지 src 추출
-        String firstImgSrc = extractFirstImgSrc(dto.getContent());
+        // 2) 본문 정리(내부 이미지 dedupe + 최대 5장 제한, blob 매핑)
+        SanitizeResult sr = sanitizeHtmlAndCollectInternal(dto.getContent(), Collections.emptyList(), newPaths);
 
-        // 최종 슬롯 채우기: 처음엔 전부 새 파일뿐이므로,
-        // 첫 번째 이미지는 보통 blob → newPaths[0]이 썸네일이 되도록
-        List<String> finalOrder = buildFinalOrderForCreate(newPaths, firstImgSrc);
+        // 3) 6장 이상이면 거부
+        if (sr.internalOrdered.size() > 5) {
+            // 업로드했지만 본문에서 쓰지 못한 새 파일은 즉시 정리
+            deleteFilesNotInSet(newPaths, new HashSet<>(sr.usedNewPaths));
+            throw new RuntimeException("이미지는 최대 5장 삽입 가능합니다.");
+        }
 
-        setImagePaths(image, finalOrder);
+        // 4) 사용되지 않은 새 파일 정리(본문에 안 쓰인 blob 매핑 잔여)
+        deleteFilesNotInSet(newPaths, new HashSet<>(sr.usedNewPaths));
+
+        // 5) 본문 교체 + 슬롯 반영
+        post.setContent(sr.html);
+        setImagePaths(image, sr.internalOrdered); // 최대 5장만 들어있음
         post.setImageEntity(image);
 
         return postRepository.save(post);
@@ -84,7 +90,6 @@ public class PostService {
                 .orElseThrow(() -> new RuntimeException("해당 게시글이 존재하지 않습니다."));
 
         post.setTitle(dto.getTitle());
-        post.setContent(dto.getContent());
         post.setModifydate(LocalDateTime.now());
 
         ImageEntity image = post.getImageEntity();
@@ -93,19 +98,39 @@ public class PostService {
             post.setImageEntity(image);
         }
 
-        // 기존 경로들 (순서 유지)
+        // 기존 내부 이미지 목록(슬롯 순서)
         List<String> existing = getExistingPaths(image);
 
-        // 이번에 추가 업로드한 새 파일 경로
+        // 이번 업로드 새 파일 저장
         List<String> newPaths = saveFiles(dto.getFiles());
 
-        // 본문 첫 번째 이미지의 src
-        String firstImgSrc = extractFirstImgSrc(dto.getContent());
+        // 본문 정리
+        SanitizeResult sr = sanitizeHtmlAndCollectInternal(dto.getContent(), existing, newPaths);
 
-        // 최종 슬롯 순서 계산 (썸네일=0번 보장)
-        List<String> finalOrder = buildFinalOrderForUpdate(existing, newPaths, firstImgSrc);
+        // 6장 이상이면 거부
+        if (sr.internalOrdered.size() > 5) {
+            // 사용되지 않은 새 파일 정리
+            deleteFilesNotInSet(newPaths, new HashSet<>(sr.usedNewPaths));
+            throw new RuntimeException("이미지는 최대 5장 삽입 가능합니다.");
+        }
 
-        setImagePaths(image, finalOrder);
+        // 사용되지 않은 새 파일 정리
+        deleteFilesNotInSet(newPaths, new HashSet<>(sr.usedNewPaths));
+
+        // 본문 교체
+        post.setContent(sr.html);
+
+        // 슬롯 반영
+        setImagePaths(image, sr.internalOrdered);
+
+        // 슬롯에서 빠진 기존 내부 파일은 디스크에서 삭제
+        HashSet<String> afterSet = new HashSet<>(sr.internalOrdered);
+        for (String old : existing) {
+            if (old != null && old.startsWith("/images/") && !afterSet.contains(old)) {
+                deleteFileQuietly(old);
+            }
+        }
+
         return postRepository.save(post);
     }
 
@@ -121,10 +146,7 @@ public class PostService {
             };
             for (String path : paths) {
                 if (path != null && path.startsWith("/images/")) {
-                    File fileToDelete = new File(uploadDir, path.substring("/images/".length()));
-                    if (fileToDelete.exists()) {
-                        fileToDelete.delete();
-                    }
+                    deleteFileQuietly(path);
                 }
             }
         }
@@ -164,7 +186,7 @@ public class PostService {
         }
     }
 
-    /** 업로드된 파일을 저장하고 웹 경로 리스트를 반환 (최대 5장에 맞춰 쓰는 건 setImagePaths에서 처리) */
+    /** 업로드된 파일을 저장하고 웹 경로 리스트를 반환 */
     private List<String> saveFiles(List<MultipartFile> files) {
         List<String> paths = new ArrayList<>();
         if (files == null || files.isEmpty()) return paths;
@@ -201,98 +223,7 @@ public class PostService {
         return list;
     }
 
-    /** 첫 번째 <img ... src="..."> 의 src 추출 (없으면 null) */
-    private String extractFirstImgSrc(String html) {
-        if (html == null || html.isBlank()) return null;
-        // src="..." 또는 src='...'
-        Pattern p = Pattern.compile("<img\\b[^>]*?src=[\"']([^\"']+)[\"'][^>]*>", Pattern.CASE_INSENSITIVE);
-        Matcher m = p.matcher(html);
-        if (m.find()) {
-            return m.group(1);
-        }
-        return null;
-    }
-
-    /** 생성(create) 시 최종 순서: 보통 첫 이미지는 blob → newPaths[0]을 0번으로 */
-    private List<String> buildFinalOrderForCreate(List<String> newPaths, String firstImgSrc) {
-        List<String> out = new ArrayList<>(5);
-        if (!newPaths.isEmpty()) {
-            // 첫 이미지가 blob이든 아니든, 생성 시에는 새 파일만 존재하므로
-            // 에디터에서 가장 먼저 들어온 새 파일이 썸네일 역할을 하도록 newPaths[0]을 0번에 둔다.
-            out.add(newPaths.get(0));
-            for (int i = 1; i < newPaths.size() && out.size() < 5; i++) {
-                out.add(newPaths.get(i));
-            }
-        }
-        return out;
-        // (이미지가 하나도 없으면 out 비어 있음 → 썸네일 없음)
-    }
-
-    /**
-     * 수정(update) 시 최종 순서:
-     * - 첫 이미지가 서버 경로(기존 이미지)면 → 그 경로를 0번으로 올리고, 나머지 기존 이미지 순서 + 새 이미지 뒤에 채우기
-     * - 첫 이미지가 blob: 이면 → 새로 올린 이미지 중 첫 번째를 0번으로, 나머지(기존→나머지 새) 순서로 채우기
-     */
-    private List<String> buildFinalOrderForUpdate(List<String> existing, List<String> newPaths, String firstImgSrc) {
-        LinkedHashSet<String> ordered = new LinkedHashSet<>(5);
-
-        boolean firstIsExisting = firstImgSrc != null && !firstImgSrc.startsWith("blob:") && existing.contains(firstImgSrc);
-        boolean firstIsBlob = firstImgSrc != null && firstImgSrc.startsWith("blob:");
-
-        if (firstIsExisting) {
-            // 1) 본문에서 가장 앞에 있는 기존 이미지를 썸네일로
-            ordered.add(firstImgSrc);
-
-            // 2) 그 외 기존 이미지들(원 순서) 추가
-            for (String ex : existing) {
-                if (ordered.size() >= 5) break;
-                if (!ordered.contains(ex)) ordered.add(ex);
-            }
-
-            // 3) 새로 추가된 이미지들 뒤에 추가
-            for (String np : newPaths) {
-                if (ordered.size() >= 5) break;
-                ordered.add(np);
-            }
-        } else if (firstIsBlob) {
-            // 1) 새 이미지 중 첫 번째를 0번으로
-            if (!newPaths.isEmpty()) {
-                ordered.add(newPaths.get(0));
-            }
-
-            // 2) 기존 이미지들(원 순서)
-            for (String ex : existing) {
-                if (ordered.size() >= 5) break;
-                if (!ordered.contains(ex)) ordered.add(ex);
-            }
-
-            // 3) 나머지 새 이미지
-            for (int i = 1; i < newPaths.size() && ordered.size() < 5; i++) {
-                ordered.add(newPaths.get(i));
-            }
-        } else {
-            // 첫 이미지가 없거나, 본문 첫 이미지가 서버 경로가 아닌 외부 URL 등인 경우:
-            // 규칙: 기존 순서 유지 → 그 뒤 새 이미지
-            for (String ex : existing) {
-                if (ordered.size() >= 5) break;
-                ordered.add(ex);
-            }
-            for (String np : newPaths) {
-                if (ordered.size() >= 5) break;
-                ordered.add(np);
-            }
-        }
-
-        // 최대 5개로 자르기
-        List<String> result = new ArrayList<>(5);
-        for (String s : ordered) {
-            result.add(s);
-            if (result.size() == 5) break;
-        }
-        return result;
-    }
-
-    /** ImageEntity 슬롯(0~4)에 순서대로 세팅, 초과는 버리고 부족하면 null 유지 */
+    /** 슬롯(0~4)에 순서대로 세팅 */
     private void setImagePaths(ImageEntity img, List<String> ordered) {
         String p0 = ordered.size() > 0 ? ordered.get(0) : null;
         String p1 = ordered.size() > 1 ? ordered.get(1) : null;
@@ -307,4 +238,158 @@ public class PostService {
         img.setImagepath4(p4);
     }
 
+    /** 파일 삭제 (조용히) */
+    private void deleteFileQuietly(String webPath) {
+        if (webPath == null || !webPath.startsWith("/images/")) return;
+        File f = new File(uploadDir, webPath.substring("/images/".length()));
+        if (f.exists()) {
+            try { f.delete(); } catch (Exception ignore) {}
+        }
+    }
+
+    private void deleteFilesNotInSet(List<String> candidates, Set<String> keep) {
+        for (String p : candidates) {
+            if (p == null) continue;
+            if (!keep.contains(p) && p.startsWith("/images/")) {
+                deleteFileQuietly(p);
+            }
+        }
+    }
+
+    // ========================================================================
+    // HTML sanitize
+    //  - blob: → 새 파일 경로로 순서 매핑
+    //  - 내부(/images/...) dedupe + 최대 5장만 유지
+    //  - 외부(http/https) 이미지는 그대로 둠(내부 5장 제한에는 미포함)
+    //  - outline 등 편집 스타일 제거
+    //  - 반환: 교체된 html, 최종 내부 이미지 순서, 실제 사용된 새 파일 목록
+    // ========================================================================
+
+    private static final Pattern IMG_TAG = Pattern.compile("(?i)<img\\b[^>]*?>");
+    private static final Pattern SRC_ATTR = Pattern.compile("(?i)\\bsrc=[\"']([^\"']+)[\"']");
+    private static final Pattern STYLE_ATTR = Pattern.compile("(?i)\\bstyle=[\"']([^\"']*)[\"']");
+
+    private SanitizeResult sanitizeHtmlAndCollectInternal(String originalHtml,
+                                                          List<String> existing,
+                                                          List<String> newPaths) {
+        String html = originalHtml == null ? "" : originalHtml;
+
+        // 편집 잔여 outline 제거
+        html = removeOutlineFromStyles(html);
+
+        // 결과를 재조립
+        StringBuilder out = new StringBuilder(html.length() + 128);
+
+        // 내부 이미지 최종 순서(중복 제거, 등장 순서 보존)
+        LinkedHashSet<String> internalOrderedSet = new LinkedHashSet<>(5);
+
+        // blob 매핑용 인덱스 + 실제 사용된 새 파일 기록
+        int blobIdx = 0;
+        LinkedHashSet<String> usedNew = new LinkedHashSet<>();
+
+        Matcher m = IMG_TAG.matcher(html);
+        int last = 0;
+
+        while (m.find()) {
+            // 앞쪽 일반 텍스트
+            out.append(html, last, m.start());
+            last = m.end();
+
+            String imgTag = m.group();
+
+            // src 추출
+            Matcher sm = SRC_ATTR.matcher(imgTag);
+            if (!sm.find()) {
+                // src 없으면 태그 자체 삭제
+                continue;
+            }
+            String src = sm.group(1);
+
+            // 외부 이미지면 그대로 둠 (내부 카운트 X)
+            if (isExternal(src)) {
+                out.append(imgTag);
+                continue;
+            }
+
+            // 내부 경로 결정: blob → newPaths 순서대로 매핑, /images/... → 그대로
+            String mapped = null;
+            if (src.startsWith("blob:")) {
+                if (blobIdx < newPaths.size()) {
+                    mapped = newPaths.get(blobIdx++);
+                    usedNew.add(mapped);
+                } else {
+                    // 매핑할 새 파일이 없음 → 이 태그는 버림
+                    continue;
+                }
+            } else if (src.startsWith("/images/")) {
+                mapped = src;
+            } else {
+                // 그 외 내부 규칙에 안맞으면 제거
+                continue;
+            }
+
+            // 내부 이미지는 중복 제거 + 최대 5장까지만 유지
+            if (internalOrderedSet.contains(mapped)) {
+                // 중복이면 이 태그는 버림
+                continue;
+            }
+            if (internalOrderedSet.size() >= 5) {
+                // 6번째 이상이면 버림
+                continue;
+            }
+
+            internalOrderedSet.add(mapped);
+
+            // 태그 재작성: src=mapped, style에서 outline류 제거
+            String rebuilt = rebuildImgTagWithSrcAndCleanStyle(imgTag, mapped);
+            out.append(rebuilt);
+        }
+
+        // 나머지 텍스트 붙이기
+        out.append(html, last, html.length());
+
+        // 결과 셋업
+        List<String> internalOrdered = new ArrayList<>(internalOrderedSet);
+        return new SanitizeResult(out.toString(), internalOrdered, new ArrayList<>(usedNew));
+    }
+
+    private boolean isExternal(String src) {
+        if (src == null) return false;
+        String s = src.toLowerCase(Locale.ROOT);
+        return s.startsWith("http://") || s.startsWith("https://") || s.startsWith("//");
+    }
+
+    private String removeOutlineFromStyles(String html) {
+        // style="...outline...; outline-...;"
+        return STYLE_ATTR.matcher(html).replaceAll(matchResult -> {
+            String styles = matchResult.group(1);
+            String cleaned = styles
+                    .replaceAll("(?i)(^|;)\\s*outline\\s*:[^;\"']*;?", "$1")
+                    .replaceAll("(?i)(^|;)\\s*outline-[^:]+:[^;\"']*;?", "$1")
+                    .replaceAll(";;+", ";")
+                    .replaceAll("^;|;$", "")
+                    .trim();
+            return cleaned.isEmpty() ? "" : "style=\"" + cleaned + "\"";
+        });
+    }
+
+    private String rebuildImgTagWithSrcAndCleanStyle(String imgTag, String newSrc) {
+        // src 교체(있으면 교체, 없으면 추가 -> 위에서 src 없는 건 이미 걸렀음)
+        String replaced = SRC_ATTR.matcher(imgTag).replaceFirst("src=\"" + Matcher.quoteReplacement(newSrc) + "\"");
+        // style 안 outline류 제거
+        replaced = removeOutlineFromStyles(replaced);
+        return replaced;
+    }
+
+    // 반환 DTO
+    private static class SanitizeResult {
+        final String html;
+        final List<String> internalOrdered; // 최대 5장(중복 제거)
+        final List<String> usedNewPaths;    // 실제 blob 매핑으로 사용된 새 파일
+        SanitizeResult(String html, List<String> internalOrdered, List<String> usedNewPaths) {
+            this.html = html;
+            this.internalOrdered = internalOrdered;
+            this.usedNewPaths = usedNewPaths;
+        }
+    }
 }
