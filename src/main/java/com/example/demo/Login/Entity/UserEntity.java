@@ -29,7 +29,7 @@ public class UserEntity {
     @Column(unique = true, length = 20, nullable = false)
     private String nickname;  // 닉네임
 
-    @Column (nullable = false, unique = true, updatable = false)
+    @Column (nullable = false, unique = true)
     private String email;  // 이메일
 
     @Column (nullable = false)

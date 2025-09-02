@@ -125,7 +125,7 @@ public class MyPageService {
                 }
 
                 if (!storedInfo.getAuthCode().equals(verificationCode)) {
-                        storedInfo.setVerified(false); // 인증 실패 상태
+//                        storedInfo.setVerified(false); // 인증 실패 상태
                         return false;
                 }
 
@@ -177,27 +177,22 @@ public class MyPageService {
                 }
 
                 // 이메일 변경 처리
-                if (requestDto.getNewEmail() != null && !requestDto.getNewEmail().isEmpty() &&
-                        requestDto.getEmailVerificationCode() != null && !requestDto.getEmailVerificationCode().isEmpty()) {
+                if (requestDto.getNewEmail() != null && !requestDto.getNewEmail().isEmpty()) {
 
                         String requestedNewEmail = requestDto.getNewEmail();
-                        String verificationCode = requestDto.getEmailVerificationCode();
-
                         EmailVerificationInfo storedInfo = emailVerificationStorage.get(loginId);
 
-                        // 최종 수정 시점에서 다시 검증 (인증 여부, 코드 일치 여부, 만료 여부)
-                        if (storedInfo == null || storedInfo.isExpired() || !storedInfo.isVerified() || // 인증이 안 됐거나 만료된 경우
-                                !storedInfo.getNewEmail().equals(requestedNewEmail) || // 요청한 새 이메일과 저장된 이메일 불일치
-                                !storedInfo.getAuthCode().equals(verificationCode)) { // 제공된 인증 코드와 저장된 코드 불일치
-
-                                emailVerificationStorage.remove(loginId); // 문제 발생 시 해당 인증 정보 제거
+                        // isVerified 여부와 이메일 일치 여부만 체크
+                        if (storedInfo == null || storedInfo.isExpired() || !storedInfo.isVerified() ||
+                                !storedInfo.getNewEmail().equals(requestedNewEmail)) {
+                                emailVerificationStorage.remove(loginId);
                                 throw new IllegalArgumentException("이메일 인증이 완료되지 않았거나 유효하지 않은 요청입니다. 다시 인증해주세요.");
                         }
 
-                        if (!user.getEmail().equals(requestedNewEmail)) { // 현재 이메일과 다른 경우에만 처리
-                                // 최종 중복 확인 (race condition 방지, 다른 사용자가 그 사이에 해당 이메일 가져갈 수도 있으니)
+                        if (!user.getEmail().equals(requestedNewEmail)) {
+                                // 최종 중복 확인 (자기 자신 제외)
                                 if (userRepository.findByEmail(requestedNewEmail).isPresent() &&
-                                        !userRepository.findByEmail(requestedNewEmail).get().getLoginid().equals(loginId)) { // 자기 자신 이메일 제외
+                                        !userRepository.findByEmail(requestedNewEmail).get().getLoginid().equals(loginId)) {
                                         throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");
                                 }
 
