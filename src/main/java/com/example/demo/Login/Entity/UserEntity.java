@@ -5,6 +5,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 
@@ -42,6 +43,17 @@ public class UserEntity {
     @LastModifiedDate
     private LocalDateTime pwupdate;  // 비밀번호 재설정 날짜
 
+    @Column(length = 15, nullable = true)
+    private String phone;  // 전화번호
+
+    @Column(length = 255, nullable = true)
+    private String location;  // 주소
+
+    @Column(nullable = true)
+    private LocalDate birthday;  // 생일
+
+    @Column(name = "image_path", length = 255, nullable = true)
+    private String imagePath;  // 사진 경로
 
 
     public int getId() { return id; }
@@ -75,6 +87,22 @@ public class UserEntity {
     public LocalDateTime getRegistDate() { return registdate; }
 
     public void setRegistDate(LocalDateTime regist_date) { this.registdate = regist_date; }
+
+    public String getPhone() { return phone; }
+
+    public void setPhone(String phone) { this.phone = phone; }
+
+    public String getLocation() { return location; }
+
+    public void setLocation(String location) { this.location = location; }
+
+    public LocalDate getBirthday() { return birthday; }
+
+    public void setBirthday(LocalDate birthday) { this.birthday = birthday; }
+
+    public String getImagePath() { return imagePath; }
+
+    public void setImagePath(String imagePath) { this.imagePath = imagePath; }
 
     // 비밀번호를 바꾸면 날짜도 자동으로 없데이트 할 수 있게 설정하는 메소드
     public void updatePassword(String encodedPassword) {

@@ -38,6 +38,11 @@ public class UserService {
         user.setRegistDate(LocalDateTime.now());
         user.setRole("USER"); //권한 설정
 
+        user.setPhone(null);
+        user.setLocation(null);
+        user.setBirthday(null);
+        user.setImagePath(null);
+
         userRepository.save(user);
     }
 
