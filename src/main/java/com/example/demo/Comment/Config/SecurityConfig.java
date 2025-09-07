@@ -28,30 +28,31 @@ public class SecurityConfig {
           .authorizeHttpRequests(auth -> auth
               .requestMatchers(
 //            --------------------------로그인
-                "/api/user/create",
-                "/api/user/login",
-                "/api/user/findid/send-auth",
-                "/api/user/findid/verify-id",
-                "/api/user/findpw/send-auth",
-                "/api/user/findpw/verify-pw",
-                "/api/user/logout",
-                // 게시글/댓글 공개 엔드포인트
-                "/api/post",
-                "/api/post/{id}",
-                "/api/posts/{postId}/comment/view",
-                "/api/comments/post/**",
-                "/api/comments/singleview/**",
-                "/api/comments/edit/**",
-                "/api/comments/delete/**",
-
-                "/api",
-                "/css/**", "/js/**", "/images/**"
-            ).permitAll() //이 경로는 누구나 접근 허용이 가능(로그인 하지 않은 사용자들도 인증없이)
-            .anyRequest().authenticated() //그 외에는 모든 접근은 로그인된 사용자만 허락함
-        )
-        .httpBasic(httpBasic -> httpBasic.disable())
-        .formLogin(form -> form.disable())
-        .logout(logout -> logout.disable());       // 선택적으로 로그아웃도 비활성화
+                      "/api/comments/post/**",
+                      "/api/comments/singleview/**",
+                      "/api/comments/edit/**",
+                      "/api/comments/delete/**"
+                      ).permitAll()
+                      .requestMatchers("/error").permitAll()
+                      .requestMatchers(
+                      "/api/user/create",
+                      "/api/user/login",
+                      "/api/user/findid/send-auth",
+                      "/api/user/findid/verify-id",
+                      "/api/user/findpw/send-auth",
+                      "/api/user/findpw/verify-pw",
+                      "/api/user/logout",
+                      "/api/post",
+                      "/api/post/{id}",
+                      "/api/posts/{postId}/comment/view",
+                      "/api",
+                      "/css/**", "/js/**", "/images/**"
+                  ).permitAll() //이 경로는 누구나 접근 허용이 가능(로그인 하지 않은 사용자들도 인증없이)
+                  .anyRequest().authenticated() //그 외에는 모든 접근은 로그인된 사용자만 허락함
+              )
+              .httpBasic(httpBasic -> httpBasic.disable())
+              .formLogin(form -> form.disable())
+              .logout(logout -> logout.disable());       // 선택적으로 로그아웃도 비활성화
 
         return http.build(); //위의 설정들을 SpringSecurity가 사용할 수 있도록 반환
     }
