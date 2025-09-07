@@ -23,15 +23,14 @@ public class CommentService {
 
     // 댓글 등록
     @Transactional
-    public CommentResponseDto createComment(CommentRequestDto requestDto) {
+    public CommentResponseDto createCommentForPost(int postId, CommentRequestDto requestDto) {
         CommentEntity comment = new CommentEntity();
-        comment.setPostId(requestDto.getPostId());
+        comment.setPostId(postId);
         comment.setLoginId(requestDto.getLoginId());
         comment.setNickname(requestDto.getNickname());
         comment.setContent(requestDto.getContent());
 
         CommentEntity saved = commentRepository.save(comment);
-
         return toResponseDto(saved);
     }
 
@@ -57,7 +56,7 @@ public class CommentService {
     // 특정 게시글의 전체 댓글 조회
     @Transactional(readOnly = true)
     public List<CommentResponseDto> getCommentsByPostId(int postId) {
-        List<CommentEntity> comments = commentRepository.findByPostIdOrderByUploadDateDesc(postId);
+        List<CommentEntity> comments = commentRepository.findByPostIdOrderByModifyDateDesc(postId);
         return comments.stream().map(this::toResponseDto).collect(Collectors.toList());
     }
 

@@ -40,10 +40,13 @@ public class CommentResponseDto {
     public String getContent() { return content; }
     public void setContent(String content) { this.content = content; }
 
-    public LocalDateTime getUploadDate() { return uploadDate; }
+    public LocalDateTime getDisplayedAt() {
+        return (modifyDate != null ? modifyDate : uploadDate);
+    }
     public void setUploadDate(LocalDateTime uploadDate) { this.uploadDate = uploadDate; }
 
-    public LocalDateTime getModifyDate() { return modifyDate; }
+    public LocalDateTime getUpdatedAt() {
+        return modifyDate;
+    }
     public void setModifyDate(LocalDateTime modifyDate) { this.modifyDate = modifyDate; }
-
 }

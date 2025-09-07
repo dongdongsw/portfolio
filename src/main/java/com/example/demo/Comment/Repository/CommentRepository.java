@@ -18,5 +18,7 @@ public interface CommentRepository extends JpaRepository<CommentEntity, Integer>
     // 게시글(postId) 기준, 업로드 순 최신순 조회
     List<CommentEntity> findByPostIdOrderByUploadDateDesc(int postId);
 
+    // 수정일 기준 최신순
+    List<CommentEntity> findByPostIdOrderByModifyDateDesc(int postId);
     // 필요하다면 추가적으로 원하는 쿼리 직접 메서드 생성 가능
 }

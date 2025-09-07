@@ -27,7 +27,7 @@ public class CommentEntity {
     @Column(name = "nickname", length = 20, nullable = false)
     private String nickname;
 
-    @Column(name = "content", length = 50)
+    @Column(name = "content", length = 300)
     private String content;
 
     @CreatedDate

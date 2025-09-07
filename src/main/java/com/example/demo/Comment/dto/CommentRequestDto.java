@@ -1,24 +1,25 @@
 package com.example.demo.Comment.Dto;
 
+//import jakarta.validation.constraints.NotBlank;
+//import jakarta.validation.constraints.Size;
+
 public class CommentRequestDto {
-    private int postId;
     private String loginId;
     private String nickname;
+
+    //@NotBlank(message = "content must not be blank")
+    //@Size(max = 1000, message = "content max length is 1000")
     private String content;
 
     public CommentRequestDto() {}
 
-    public CommentRequestDto(int postId, String loginId, String nickname, String content) {
-        this.postId = postId;
+    public CommentRequestDto(String loginId, String nickname, String content) {
         this.loginId = loginId;
         this.nickname = nickname;
         this.content = content;
     }
 
     // Getter & Setter
-    public int getPostId() { return postId; }
-    public void setPostId(int postId) { this.postId = postId; }
-
     public String getLoginId() { return loginId; }
     public void setLoginId(String loginId) { this.loginId = loginId; }
 
