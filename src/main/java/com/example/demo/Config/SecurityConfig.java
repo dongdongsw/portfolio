@@ -39,6 +39,7 @@ public class SecurityConfig {
                                         "/api/comments/delete/**"
                                 ).permitAll()
                                 .requestMatchers("/error").permitAll()
+                                .requestMatchers("/api/user/me").authenticated()
                                 .requestMatchers(
 //                            --------------------------로그인
                                         "/api/user/create",
@@ -92,9 +93,10 @@ public class SecurityConfig {
     public org.springframework.web.cors.CorsConfigurationSource corsConfigurationSource() {
         var config = new org.springframework.web.cors.CorsConfiguration();
         config.setAllowCredentials(true);
-        config.addAllowedOriginPattern("*");
-        config.addAllowedHeader("*");
-        config.addAllowedMethod("*");
+        config.setAllowedOrigins(java.util.List.of("http://localhost:3000"));
+        config.setAllowedMethods(java.util.List.of("GET","POST","PUT","DELETE","OPTIONS"));
+        config.setAllowedHeaders(java.util.List.of("*"));
+        config.setExposedHeaders(java.util.List.of("Location"));
 
         var source = new org.springframework.web.cors.UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
