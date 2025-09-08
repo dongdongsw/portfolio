@@ -1,7 +1,7 @@
 package com.example.demo.Comment.Service;
 
-import com.example.demo.Comment.Dto.CommentRequestDto;
-import com.example.demo.Comment.Dto.CommentResponseDto;
+import com.example.demo.Comment.dto.CommentRequestDto;
+import com.example.demo.Comment.dto.CommentResponseDto;
 import com.example.demo.Comment.Entity.CommentEntity;
 import com.example.demo.Comment.Repository.CommentRepository;
 import org.springframework.beans.factory.annotation.Autowired;

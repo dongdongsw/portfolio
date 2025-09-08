@@ -19,7 +19,7 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
 
     @Bean
-    public PasswordEncoder pawordssEncoder() {     //패스 워드 암호화 관련 메소드
+    public PasswordEncoder passwordEncoder() {     //패스 워드 암호화 관련 메소드
         return new BCryptPasswordEncoder();
     }
 
@@ -31,11 +31,17 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .csrf().disable()   //api 개발할 때는 dusable로 해놓고 꺼놓고 실제 개발시에는 enable로 수정
-                .cors()
-                .and()// CORS 활성화
-                .authorizeHttpRequests() //경로에 어떤 권한을 줄지 설정
+                .csrf(csrf -> csrf.disable())   //api 개발할 때는 dusable로 해놓고 꺼놓고 실제 개발시에는 enable로 수정
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .authorizeHttpRequests(auth -> auth //경로에 어떤 권한을 줄지 설정
                 .requestMatchers(
+                        "/api/comments/post/**",
+                        "/api/comments/singleview/**",
+                        "/api/comments/edit/**",
+                        "/api/comments/delete/**"
+                        ).permitAll()
+                        .requestMatchers("/error").permitAll()
+                        .requestMatchers(
 //                            --------------------------로그인
                         "/api/user/create",
                         "/api/user/login",
@@ -54,20 +60,13 @@ public class SecurityConfig {
                         "/api/post/{id}",
                         "/api/posts/{postId}/comment/view",
                         //---------------------------
-                        "/api/comments/commentscreate",
-                        "/api/comments/post/**",
-                        "/api/comments/singleview/**",
-                        "/api/comments/edit/**",
-                        "/api/comments/delete/**",
-                        //---------------------------
                         "/api",
                         "/css/**",
                         "/js/**",
-                        "/images/**").permitAll() //이 경로는 누구나 접근 허용이 가능(로그인 하지 않은 사용자들도 인증없이)
+                        "/images/**")
+                .permitAll() //이 경로는 누구나 접근 허용이 가능(로그인 하지 않은 사용자들도 인증없이)
                 .anyRequest().authenticated() //그 외에는 모든 접근은 로그인된 사용자만 허락함
-
-                .and() //authorizeHttpRequests()의 설정을 마무리하고 다음으로
-
+                )
 //                .formLogin()
 //                    .loginPage("/api/user/login") //로그인 입력하는 페이지
 //                    .loginProcessingUrl("/api/user/login") //로그인 처리하는 페이지
@@ -77,10 +76,10 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED) // 세션이 필요할 때 생성 (기본값)
                         .sessionFixation().migrateSession() // 세션 고정 공격 방어 (세션 ID 변경)
                 )
-                .httpBasic().disable()
-                .formLogin().disable()
+                .httpBasic(httpBasic -> httpBasic.disable())
+                .formLogin(form -> form.disable())
 //                .and()//formLogi n()의 설정을 마무리하고 다음으로
-                .logout().disable();       // 선택적으로 로그아웃도 비활성화
+                .logout(logout -> logout.disable());       // 선택적으로 로그아웃도 비활성화
 
 //                .logout()
 //                    .logoutUrl("/api/user/logout") //로그아웃 처리하는 페이지
@@ -89,5 +88,18 @@ public class SecurityConfig {
 
 
         return http.build(); //위의 설정들을 SpringSecurity가 사용할 수 있도록 반환
+    }
+
+    @Bean
+    public org.springframework.web.cors.CorsConfigurationSource corsConfigurationSource() {
+        var config = new org.springframework.web.cors.CorsConfiguration();
+        config.setAllowCredentials(true);
+        config.addAllowedOriginPattern("*");
+        config.addAllowedHeader("*");
+        config.addAllowedMethod("*");
+
+        var source = new org.springframework.web.cors.UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
     }
 }

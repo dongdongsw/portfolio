@@ -1,4 +1,4 @@
-package com.example.demo.Comment.Dto;
+package com.example.demo.Comment.dto;
 
 import java.time.LocalDateTime;
 
