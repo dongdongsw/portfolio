@@ -35,7 +35,6 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth //경로에 어떤 권한을 줄지 설정
                                 .requestMatchers(
                                         "/api/comments/post/**",
-                                        "/api/comments/singleview/**",
                                         "/api/comments/edit/**",
                                         "/api/comments/delete/**"
                                 ).permitAll()
