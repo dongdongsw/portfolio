@@ -209,4 +209,13 @@ public class MyPageService {
                         throw new IllegalArgumentException("변경할 내용이 없습니다."); // 변경사항이 없으면 예외를 던지거나, 단순히 성공 메시지 반환
                 }
         }
+
+        @Transactional
+        public void deleteAccount(String loginId){
+                UserEntity user = userRepository.findByLoginid(loginId)
+                        .orElseThrow(()-> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+                userRepository.delete(user);
+        }
+
+
 }
