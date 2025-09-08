@@ -1,5 +1,6 @@
 package com.example.demo.Comment.dto;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
 import java.time.LocalDateTime;
 
 public class CommentResponseDto {
@@ -40,13 +41,13 @@ public class CommentResponseDto {
     public String getContent() { return content; }
     public void setContent(String content) { this.content = content; }
 
+    @JsonGetter("displayedAt")
     public LocalDateTime getDisplayedAt() {
         return (modifyDate != null ? modifyDate : uploadDate);
     }
-    public void setUploadDate(LocalDateTime uploadDate) { this.uploadDate = uploadDate; }
 
+    @JsonGetter("updatedAt")
     public LocalDateTime getUpdatedAt() {
         return modifyDate;
     }
-    public void setModifyDate(LocalDateTime modifyDate) { this.modifyDate = modifyDate; }
 }

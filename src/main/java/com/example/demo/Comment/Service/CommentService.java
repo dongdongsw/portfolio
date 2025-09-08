@@ -50,6 +50,9 @@ public class CommentService {
     // 댓글 삭제
     @Transactional
     public void deleteComment(int commentId) {
+        if (!commentRepository.existsById(commentId)) {
+            throw new IllegalArgumentException("댓글이 존재하지 않습니다");
+        }
         commentRepository.deleteById(commentId);
     }
 
@@ -58,14 +61,6 @@ public class CommentService {
     public List<CommentResponseDto> getCommentsByPostId(int postId) {
         List<CommentEntity> comments = commentRepository.findByPostIdOrderByModifyDateDesc(postId);
         return comments.stream().map(this::toResponseDto).collect(Collectors.toList());
-    }
-
-    // 단일 댓글 조회
-    @Transactional(readOnly = true)
-    public CommentResponseDto getComment(int commentId) {
-        CommentEntity comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new IllegalArgumentException("댓글이 존재하지 않습니다."));
-        return toResponseDto(comment);
     }
 
     // Entity → ResponseDto 변환

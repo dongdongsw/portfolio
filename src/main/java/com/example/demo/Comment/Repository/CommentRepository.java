@@ -1,6 +1,8 @@
 package com.example.demo.Comment.Repository;
 
 import com.example.demo.Comment.Entity.CommentEntity;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -21,4 +23,6 @@ public interface CommentRepository extends JpaRepository<CommentEntity, Integer>
     // 수정일 기준 최신순
     List<CommentEntity> findByPostIdOrderByModifyDateDesc(int postId);
     // 필요하다면 추가적으로 원하는 쿼리 직접 메서드 생성 가능
+
+    Page<CommentEntity> findByPostId(int postId, Pageable pageable);
 }

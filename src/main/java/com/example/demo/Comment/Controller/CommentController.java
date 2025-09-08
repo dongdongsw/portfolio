@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
 
@@ -26,11 +26,11 @@ public class CommentController {
     @PostMapping("/post/{postId}")
     public ResponseEntity<CommentResponseDto> create (
             @PathVariable int postId,
-            @RequestBody CommentRequestDto requestDto
+            @Valid @RequestBody CommentRequestDto requestDto
     ) {
         CommentResponseDto saved = commentService.createCommentForPost(postId, requestDto);
         return ResponseEntity
-                .created(URI.create("/api/comments/" + saved.getId()))
+                .created(URI.create("/api/comments/post/" + postId))
                 .body(saved);
     }
 
@@ -39,13 +39,6 @@ public class CommentController {
     public ResponseEntity<List<CommentResponseDto>> getByPost(@PathVariable int postId) {
         List<CommentResponseDto> list = commentService.getCommentsByPostId(postId);
         return ResponseEntity.ok(list);
-    }
-
-    // 단일 댓글 조회
-    @GetMapping("/singleview/{commentId}")
-    public ResponseEntity<CommentResponseDto> getById(@PathVariable int commentId) {
-        CommentResponseDto dto = commentService.getComment(commentId);
-        return ResponseEntity.ok(dto);
     }
 
     // 댓글 수정
