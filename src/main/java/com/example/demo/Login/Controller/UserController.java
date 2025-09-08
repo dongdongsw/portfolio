@@ -173,4 +173,20 @@ public class UserController {
         session.invalidate(); // 세션 초기화
         return ResponseEntity.ok("로그아웃 되었습니다");
     }
+
+    // 로그인한 사용자 정보 반환 (닉네임 포함) = 필요하다고 해서 메소드 하나 추가해용 ㅠㅠ
+    @GetMapping("/me")
+    public Map<String, Object> me(org.springframework.security.core.Authentication auth) {
+        if (auth == null || !auth.isAuthenticated()) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.UNAUTHORIZED
+            );
+        }
+        String loginId = auth.getName();
+        com.example.demo.Login.Entity.UserEntity user = userService.getUserByLoginId(loginId);
+        return java.util.Map.of(
+                "loginId", user.getLoginid(),
+                "nickname", user.getNickName()
+        );
+    }
 }
