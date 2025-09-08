@@ -9,7 +9,8 @@ import com.example.demo.MyPage.Dto.UserResponseDto;
 import com.example.demo.MyPage.Service.MyPageService;
 
 import jakarta.validation.Valid;
-
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.ResponseEntity;
@@ -117,10 +118,17 @@ public class MyPageController {
     }
 
     @DeleteMapping("/delete")
-    public ResponseEntity<String> deleteAccount(@AuthenticationPrincipal UserDetails userDetails){
+    public ResponseEntity<String> deleteAccount(@AuthenticationPrincipal UserDetails userDetails, HttpServletRequest request){
         String loginId = userDetails.getUsername();
         try {
             myPageService.deleteAccount(loginId);
+
+            // 🔑 세션 무효화 (로그아웃)
+            HttpSession session = request.getSession(false);
+            if (session != null) {
+                session.invalidate();
+            }
+
             return ResponseEntity.ok("회원 탈퇴가 완료되었습니다.");
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
