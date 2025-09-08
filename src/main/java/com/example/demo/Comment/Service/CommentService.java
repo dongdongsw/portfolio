@@ -1,7 +1,7 @@
 package com.example.demo.Comment.Service;
 
-import com.example.demo.Comment.dto.CommentRequestDto;
-import com.example.demo.Comment.dto.CommentResponseDto;
+import com.example.demo.Comment.Dto.CommentRequestDto;
+import com.example.demo.Comment.Dto.CommentResponseDto;
 import com.example.demo.Comment.Entity.CommentEntity;
 import com.example.demo.Comment.Repository.CommentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,18 +23,16 @@ public class CommentService {
 
     // 댓글 등록
     @Transactional
-    public CommentResponseDto createComment(CommentRequestDto requestDto) {
+    public CommentResponseDto createCommentForPost(int postId, CommentRequestDto requestDto) {
         CommentEntity comment = new CommentEntity();
-        comment.setPostId(requestDto.getPostId());
+        comment.setPostId(postId);
         comment.setLoginId(requestDto.getLoginId());
         comment.setNickname(requestDto.getNickname());
         comment.setContent(requestDto.getContent());
 
         CommentEntity saved = commentRepository.save(comment);
-
         return toResponseDto(saved);
     }
-
 
     // 댓글 수정
     @Transactional
@@ -58,7 +56,7 @@ public class CommentService {
     // 특정 게시글의 전체 댓글 조회
     @Transactional(readOnly = true)
     public List<CommentResponseDto> getCommentsByPostId(int postId) {
-        List<CommentEntity> comments = commentRepository.findByPostIdOrderByUploadDateDesc(postId);
+        List<CommentEntity> comments = commentRepository.findByPostIdOrderByModifyDateDesc(postId);
         return comments.stream().map(this::toResponseDto).collect(Collectors.toList());
     }
 

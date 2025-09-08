@@ -1,4 +1,4 @@
-package com.example.demo.Comment.dto;
+package com.example.demo.Comment.Dto;
 
 import java.time.LocalDateTime;
 
@@ -12,7 +12,6 @@ public class CommentResponseDto {
     private LocalDateTime modifyDate;
 
     public CommentResponseDto() {}
-
 
     public CommentResponseDto(int id, int postId, String loginId, String nickname,
                               String content, LocalDateTime uploadDate, LocalDateTime modifyDate) {
@@ -41,10 +40,13 @@ public class CommentResponseDto {
     public String getContent() { return content; }
     public void setContent(String content) { this.content = content; }
 
-    public LocalDateTime getUploadDate() { return uploadDate; }
+    public LocalDateTime getDisplayedAt() {
+        return (modifyDate != null ? modifyDate : uploadDate);
+    }
     public void setUploadDate(LocalDateTime uploadDate) { this.uploadDate = uploadDate; }
 
-    public LocalDateTime getModifyDate() { return modifyDate; }
+    public LocalDateTime getUpdatedAt() {
+        return modifyDate;
+    }
     public void setModifyDate(LocalDateTime modifyDate) { this.modifyDate = modifyDate; }
-
 }
