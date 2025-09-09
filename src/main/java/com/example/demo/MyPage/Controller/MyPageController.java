@@ -13,11 +13,13 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/mypage")
@@ -104,13 +106,14 @@ public class MyPageController {
     }
 
     // 최종 마이페이지 업데이트 (수정 완료 버튼 클릭)
-    @PatchMapping
+    @PatchMapping(consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity<String> updateMyPage(
             @AuthenticationPrincipal UserDetails userDetails,
-            @RequestBody MyPageUpdateRequestDto requestDto) {
-        String loginId = getLoginId(userDetails);
+            @RequestPart("updateDto") MyPageUpdateRequestDto requestDto,
+            @RequestPart(value = "profileImage", required = false) MultipartFile profileImage) {
+        String loginId = userDetails.getUsername();
         try {
-            myPageService.updateMyPage(loginId, requestDto);
+            myPageService.updateMyPage(loginId, requestDto, profileImage);
             return ResponseEntity.ok("회원 정보가 성공적으로 업데이트되었습니다.");
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());

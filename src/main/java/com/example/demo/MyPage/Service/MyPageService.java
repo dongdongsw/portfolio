@@ -16,9 +16,15 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
@@ -138,11 +144,29 @@ public class MyPageService {
 
         // 최종 마이페이지 업데이트 (수정 완료 버튼 클릭 시)
         @Transactional // 모든 변경 사항을 한 트랜잭션으로 처리
-        public void updateMyPage(String loginId, MyPageUpdateRequestDto requestDto) {
+        public void updateMyPage(String loginId, MyPageUpdateRequestDto requestDto, MultipartFile profileImage) {
                 UserEntity user = userRepository.findByLoginid(loginId)
                         .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
                 boolean isModified = false; // 실제로 변경된 사항이 있는지 체크
+
+                // 이미지 업로드 처리
+                if (profileImage != null && !profileImage.isEmpty()) {
+                        try {
+                                String uploadDir = "uploads/profile/";
+                                Files.createDirectories(Paths.get(uploadDir));
+
+                                String fileName = UUID.randomUUID() + "_" + profileImage.getOriginalFilename();
+                                Path filePath = Paths.get(uploadDir, fileName);
+                                Files.write(filePath, profileImage.getBytes());
+
+                                user.setImagePath("/" + uploadDir + fileName); // DB에는 URL 경로 저장
+                                isModified = true;
+                        } catch (IOException e) {
+                                throw new IllegalArgumentException("이미지 업로드 실패: " + e.getMessage());
+                        }
+                }
+
 
                 // 닉네임 변경 처리
                 if (requestDto.getNewNickname() != null && !requestDto.getNewNickname().isEmpty()) {
@@ -202,8 +226,26 @@ public class MyPageService {
                         emailVerificationStorage.remove(loginId); // 이메일 변경 완료 후 인증 정보 삭제
                 }
 
+                if (requestDto.getPhone() != null) {
+                        user.setPhone(requestDto.getPhone());
+                        isModified = true;
+                }
+                if (requestDto.getLocation() != null) {
+                        user.setLocation(requestDto.getLocation());
+                        isModified = true;
+                }
+                if (requestDto.getBirthday() != null) {
+                        user.setBirthday(requestDto.getBirthday());
+                        isModified = true;
+                }
+                if (requestDto.getImagePath() != null) {
+                        user.setImagePath(requestDto.getImagePath());
+                        isModified = true;
+                }
+
                 // 변경 사항이 있을 경우에만 저장
                 if (isModified) {
+                        user.setModifyDate(LocalDateTime.now()); //회원 정보 최종 수정일 반영
                         userRepository.save(user); // 한 번에 변경된 UserEntity 저장
                 } else {
                         throw new IllegalArgumentException("변경할 내용이 없습니다."); // 변경사항이 없으면 예외를 던지거나, 단순히 성공 메시지 반환

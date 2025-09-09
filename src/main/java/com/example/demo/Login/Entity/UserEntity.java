@@ -55,6 +55,11 @@ public class UserEntity {
     @Column(name = "image_path", length = 255, nullable = true)
     private String imagePath;  // 사진 경로
 
+    @LastModifiedDate
+    @Column(name = "modify_date")
+    private LocalDateTime modifyDate;  // 회원 정보 최종 수정 날짜
+
+
 
     public int getId() { return id; }
 
@@ -103,6 +108,14 @@ public class UserEntity {
     public String getImagePath() { return imagePath; }
 
     public void setImagePath(String imagePath) { this.imagePath = imagePath; }
+
+    public LocalDateTime getModifyDate() {
+        return modifyDate;
+    }
+
+    public void setModifyDate(LocalDateTime modifyDate) {
+        this.modifyDate = modifyDate;
+    }
 
     // 비밀번호를 바꾸면 날짜도 자동으로 없데이트 할 수 있게 설정하는 메소드
     public void updatePassword(String encodedPassword) {

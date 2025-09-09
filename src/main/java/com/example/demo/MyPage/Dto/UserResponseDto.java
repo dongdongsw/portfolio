@@ -4,6 +4,7 @@ import com.example.demo.Login.Entity.UserEntity;
 import lombok.Builder; // 객체를 만들 때 순서에 상관없이 명확하게 만들 수 있게 도와줌
 import lombok.Getter;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Getter
@@ -15,6 +16,11 @@ public class UserResponseDto {
     private String role;
     private LocalDateTime registdate;
     private LocalDateTime pwupdate;
+    private String phone;
+    private String location;
+    private LocalDate birthday;
+    private String imagePath;
+    private LocalDateTime modifyDate;
 
     // UserEntity 내부 정보가 외부로 노출 방지
     public static UserResponseDto from(UserEntity userEntity) {
@@ -25,6 +31,11 @@ public class UserResponseDto {
                 .role(userEntity.getRole())
                 .registdate(userEntity.getRegistDate())
                 .pwupdate(userEntity.getPwudate())
+                .phone(userEntity.getPhone())
+                .location(userEntity.getLocation())
+                .birthday(userEntity.getBirthday())
+                .imagePath(userEntity.getImagePath())
+                .modifyDate(userEntity.getModifyDate())
                 .build();
     }
 }
