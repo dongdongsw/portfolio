@@ -3,6 +3,7 @@ package com.example.demo.Config;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -58,12 +59,21 @@ public class SecurityConfig {
                                         "/api/posts/delete/**",
                                         "/api/post/{id}",
                                         "/api/posts/{postId}/comment/view",
+                                        "/api/posts/profile-image",
                                         //---------------------------
                                         "/api",
                                         "/css/**",
                                         "/js/**",
-                                        "/images/**")
+                                        "/images/**",
+                                        "/profile/**")
                                 .permitAll() //이 경로는 누구나 접근 허용이 가능(로그인 하지 않은 사용자들도 인증없이)
+
+                        .requestMatchers(HttpMethod.OPTIONS, "/api/posts/profile-image").permitAll()
+                        .requestMatchers(HttpMethod.OPTIONS, "/api/posts/profile-image/**").permitAll()
+                        .requestMatchers(HttpMethod.POST,   "/api/posts/profile-image").permitAll()
+                        .requestMatchers(HttpMethod.POST,   "/api/posts/profile-image/**").permitAll()
+                        .requestMatchers(HttpMethod.DELETE, "/api/posts/profile-image").permitAll()
+                        .requestMatchers(HttpMethod.DELETE, "/api/posts/profile-image/**").permitAll()
                                 .anyRequest().authenticated() //그 외에는 모든 접근은 로그인된 사용자만 허락함
                 )
 //                .formLogin()
@@ -94,7 +104,7 @@ public class SecurityConfig {
         var config = new org.springframework.web.cors.CorsConfiguration();
         config.setAllowCredentials(true);
         config.setAllowedOrigins(java.util.List.of("http://localhost:3000"));
-        config.setAllowedMethods(java.util.List.of("GET","POST","PUT","DELETE","OPTIONS"));
+        config.setAllowedMethods(java.util.List.of("GET","POST","PUT","DELETE","OPTIONS","PATCH"));
         config.setAllowedHeaders(java.util.List.of("*"));
         config.setExposedHeaders(java.util.List.of("Location"));
 

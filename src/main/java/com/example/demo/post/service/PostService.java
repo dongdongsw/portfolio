@@ -1,10 +1,12 @@
 package com.example.demo.post.service;
 
+import com.example.demo.Login.Entity.UserEntity;
 import com.example.demo.post.dto.PostRequestDto;
 import com.example.demo.post.dto.PostResponseDto;
 import com.example.demo.post.entity.PostEntity;
 import com.example.demo.post.entity.ImageEntity;
 import com.example.demo.post.repository.PostRepository;
+import com.example.demo.Login.Repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,11 +26,17 @@ import java.util.regex.Pattern;
 public class PostService {
 
     private final PostRepository postRepository;
+    private final UserRepository userRepository; // ⬅ 추가
+
+    // 게시글 본문 이미지 저장 디렉터리
     private final String uploadDir = System.getProperty("user.dir") + "/uploads/images/";
+
+    // ⬇⬇ 프로필 이미지 저장 디렉터리 (여기에 저장)
+    private final String rootUploadDir = System.getProperty("user.dir") + "/uploads";
+    private final String profileDir   = rootUploadDir + "/profileImages";
 
     @PersistenceContext
     private EntityManager em;
-
 
     public List<PostEntity> getAllPosts() {
         return postRepository.findAll();
@@ -177,7 +185,81 @@ public class PostService {
     }
 
     // ========================================================================
-    // Helper methods
+    // 🔸 프로필 이미지: 업로드 & 삭제 (UserEntity.imagePath 갱신)
+    // ========================================================================
+
+    /** 로그인 아이디로 사용자 찾아 프로필 이미지 업로드 후 imagePath 갱신, 이전 내부 파일 정리 */
+    @Transactional
+    public String uploadProfileImage(String loginId, MultipartFile file) {
+        if (loginId == null) throw new RuntimeException("로그인이 필요합니다.");
+        UserEntity user = userRepository.findByLoginid(loginId)
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+
+        if (file == null || file.isEmpty()) {
+            throw new RuntimeException("이미지 파일이 비어있습니다.");
+        }
+        String contentType = Optional.ofNullable(file.getContentType()).orElse("").toLowerCase(Locale.ROOT);
+        if (!contentType.startsWith("image/")) {
+            throw new RuntimeException("이미지 파일만 업로드 가능합니다.");
+        }
+
+        ensureProfileDirectory();
+
+        try {
+            String original = file.getOriginalFilename();
+            String extension = "";
+            if (original != null && original.lastIndexOf('.') != -1) {
+                extension = original.substring(original.lastIndexOf('.'));
+            }
+            String saved = UUID.randomUUID().toString() + extension;
+            File target = new File(profileDir, saved);
+            file.transferTo(target);
+
+            String webPath = "/images/profileImages/" + saved;
+
+            // 기존 내부 프로필 파일 삭제
+            deleteOldProfileInternal(user.getImagePath());
+
+            // DB 갱신
+            user.setImagePath(webPath);
+            userRepository.save(user);
+
+            return webPath;
+        } catch (IOException e) {
+            throw new RuntimeException("프로필 이미지 저장 중 오류가 발생했습니다.", e);
+        }
+    }
+
+    /** 로그인 아이디로 사용자 찾아 프로필 이미지 제거(내부 파일 삭제 + imagePath null) */
+    @Transactional
+    public void clearProfileImage(String loginId) {
+        if (loginId == null) throw new RuntimeException("로그인이 필요합니다.");
+        UserEntity user = userRepository.findByLoginid(loginId)
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+
+        deleteOldProfileInternal(user.getImagePath());
+        user.setImagePath(null);
+        userRepository.save(user);
+    }
+
+    private void ensureProfileDirectory() {
+        File directory = new File(profileDir);
+        if (!directory.exists()) directory.mkdirs();
+    }
+
+    private void deleteOldProfileInternal(String oldWebPath) {
+        if (oldWebPath == null) return;
+        String prefix = "/images/profileImages/";
+        if (oldWebPath.startsWith(prefix)) {
+            File f = new File(profileDir, oldWebPath.substring(prefix.length()));
+            if (f.exists()) {
+                try { f.delete(); } catch (Exception ignore) {}
+            }
+        }
+    }
+
+    // ========================================================================
+    // Helper methods (게시글 이미지 처리)
     // ========================================================================
 
     private void ensureDirectory() {
@@ -258,12 +340,7 @@ public class PostService {
     }
 
     // ========================================================================
-    // HTML sanitize
-    //  - blob: → 새 파일 경로로 순서 매핑
-    //  - 내부(/images/...) dedupe + 최대 5장만 유지
-    //  - 외부(http/https) 이미지는 그대로 둠(내부 5장 제한에는 미포함)
-    //  - outline 등 편집 스타일 제거
-    //  - 반환: 교체된 html, 최종 내부 이미지 순서, 실제 사용된 새 파일 목록
+    // HTML sanitize (본문)
     // ========================================================================
 
     private static final Pattern IMG_TAG = Pattern.compile("(?i)<img\\b[^>]*?>");
