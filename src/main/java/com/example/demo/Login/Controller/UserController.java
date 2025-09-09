@@ -1,3 +1,5 @@
+// src/main/java/com/example/demo/Login/Controller/UserController.java
+
 package com.example.demo.Login.Controller;
 
 import com.example.demo.Login.Service.MailService;
@@ -56,7 +58,7 @@ public class UserController {
         UserEntity userEntity = userService.getUserByLoginId(requestDto.getLoginid());
         UserLoginResponseDto responseDto = new UserLoginResponseDto(
                 userEntity.getLoginid(),
-                null, // 비밀번호는 null로 세션에 저장하지 않음
+                userEntity.getEmail(), // ✅ userEntity에서 이메일 값 할당
                 userEntity.getNickName(),
                 userEntity.getPhone(),
                 userEntity.getBirthday(),
@@ -79,6 +81,36 @@ public class UserController {
             return ResponseEntity.badRequest().body(null); // 로그인 세션이 없으면 에러
         }
         return ResponseEntity.ok(loginUser); // JSON 형태로 세션 DTO 반환
+    }
+
+    // 세션 정보 업데이트 API
+    @PatchMapping("/session-info")
+    public ResponseEntity<String> updateSessionInfo(@RequestBody UserLoginResponseDto requestDto, HttpSession session) {
+        UserLoginResponseDto loginUser = (UserLoginResponseDto) session.getAttribute("loginUser");
+        if (loginUser == null) {
+            return ResponseEntity.badRequest().body("로그인 세션이 없습니다.");
+        }
+
+        try {
+            userService.updateUserContactInfo(loginUser.getLoginid(), requestDto);
+
+            // ✅ 업데이트된 UserEntity 정보를 다시 조회하여 DTO를 재구성
+            UserEntity updatedUser = userService.getUserByLoginId(loginUser.getLoginid());
+            UserLoginResponseDto updatedDto = new UserLoginResponseDto(
+                    updatedUser.getLoginid(),
+                    updatedUser.getEmail(), // ✅ 업데이트된 유저에서 이메일 값 할당
+                    updatedUser.getNickName(),
+                    updatedUser.getPhone(),
+                    updatedUser.getBirthday(),
+                    updatedUser.getLocation(),
+                    updatedUser.getImagePath()
+            );
+            session.setAttribute("loginUser", updatedDto);
+
+            return ResponseEntity.ok("세션 정보가 업데이트되었습니다.");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     // 아이디 찾기 (이메일 존재 여부 검증 후 인증 이메일 발송)
