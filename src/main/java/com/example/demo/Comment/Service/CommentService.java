@@ -4,10 +4,11 @@ import com.example.demo.Comment.dto.CommentRequestDto;
 import com.example.demo.Comment.dto.CommentResponseDto;
 import com.example.demo.Comment.Entity.CommentEntity;
 import com.example.demo.Comment.Repository.CommentRepository;
+import com.example.demo.Login.Entity.UserEntity;
+import com.example.demo.Login.Service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -15,10 +16,12 @@ import java.util.stream.Collectors;
 public class CommentService {
 
     private final CommentRepository commentRepository;
+    private final UserService userService;
 
     @Autowired
-    public CommentService(CommentRepository commentRepository) {
+    public CommentService(CommentRepository commentRepository, UserService userService) {
         this.commentRepository = commentRepository;
+        this.userService = userService;
     }
 
     // 댓글 등록
@@ -27,7 +30,6 @@ public class CommentService {
         CommentEntity comment = new CommentEntity();
         comment.setPostId(postId);
         comment.setLoginId(requestDto.getLoginId());
-        comment.setNickname(requestDto.getNickname());
         comment.setContent(requestDto.getContent());
 
         CommentEntity saved = commentRepository.save(comment);
@@ -41,7 +43,6 @@ public class CommentService {
                 .orElseThrow(() -> new IllegalArgumentException("댓글이 존재하지 않습니다."));
 
         comment.setContent(requestDto.getContent());
-        comment.setNickname(requestDto.getNickname());
         CommentEntity updated = commentRepository.save(comment);
 
         return toResponseDto(updated);
@@ -65,11 +66,19 @@ public class CommentService {
 
     // Entity → ResponseDto 변환
     private CommentResponseDto toResponseDto(CommentEntity entity) {
+        String nickname = null;
+        try {
+            UserEntity user = userService.getUserByLoginId(entity.getLoginId());
+            nickname = (user != null ? user.getNickName() : null);
+        } catch (Exception e) {
+            nickname = null;
+        }
+
         return new CommentResponseDto(
                 entity.getId(),
                 entity.getPostId(),
                 entity.getLoginId(),
-                entity.getNickname(),
+                nickname,
                 entity.getContent(),
                 entity.getUploadDate(),
                 entity.getModifyDate()
