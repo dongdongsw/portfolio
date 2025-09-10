@@ -160,7 +160,7 @@ public class MyPageService {
                                 Path filePath = Paths.get(uploadDir, fileName);
                                 Files.write(filePath, profileImage.getBytes());
 
-                                user.setImagePath("/" + uploadDir + fileName); // DB에는 URL 경로 저장
+                                user.setImagePath("/profile/" + fileName); // DB에는 '/profile/...' 형식으로 저장
                                 isModified = true;
                         } catch (IOException e) {
                                 throw new IllegalArgumentException("이미지 업로드 실패: " + e.getMessage());
