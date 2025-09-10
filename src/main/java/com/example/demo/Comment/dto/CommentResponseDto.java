@@ -1,7 +1,7 @@
 package com.example.demo.Comment.dto;
 
-import com.fasterxml.jackson.annotation.JsonGetter;
-import java.time.LocalDateTime;
+import com.example.demo.Comment.Entity.CommentEntity;
+import java.time.format.DateTimeFormatter;
 
 public class CommentResponseDto {
     private int id;
@@ -9,20 +9,23 @@ public class CommentResponseDto {
     private String loginId;
     private String nickname;
     private String content;
-    private LocalDateTime uploadDate;
-    private LocalDateTime modifyDate;
+    private String uploadDate;
+    private String modifyDate;
 
     public CommentResponseDto() {}
 
-    public CommentResponseDto(int id, int postId, String loginId, String nickname,
-                              String content, LocalDateTime uploadDate, LocalDateTime modifyDate) {
-        this.id = id;
-        this.postId = postId;
-        this.loginId = loginId;
-        this.nickname = nickname;
-        this.content = content;
-        this.uploadDate = uploadDate;
-        this.modifyDate = modifyDate;
+    public CommentResponseDto(CommentEntity comment, String latestNickname) {
+        if(comment == null) throw new IllegalArgumentException("CommentEntity is null");
+
+        this.id = comment.getId();
+        this.postId = comment.getPostId();
+        this.loginId = comment.getLoginId();
+        this.nickname = latestNickname != null ? latestNickname : "Unknown";
+        this.content = comment.getContent();
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy년 MM월 dd일 HH:mm");
+        this.uploadDate = comment.getUploadDate() != null ? comment.getUploadDate().format(formatter) : null;
+        this.modifyDate = comment.getModifyDate() != null ? comment.getModifyDate().format(formatter) : null;
     }
 
     // Getter & Setter
@@ -41,13 +44,9 @@ public class CommentResponseDto {
     public String getContent() { return content; }
     public void setContent(String content) { this.content = content; }
 
-    @JsonGetter("displayedAt")
-    public LocalDateTime getDisplayedAt() {
-        return (modifyDate != null ? modifyDate : uploadDate);
-    }
+    public String getUploadDate() { return uploadDate; }
+    public void setUploadDate(String uploadDate) { this.uploadDate = uploadDate; }
 
-    @JsonGetter("updatedAt")
-    public LocalDateTime getUpdatedAt() {
-        return modifyDate;
-    }
+    public String getModifyDate() { return  modifyDate; }
+    public void setModifyDate(String modifyDate) { this.modifyDate = modifyDate; }
 }

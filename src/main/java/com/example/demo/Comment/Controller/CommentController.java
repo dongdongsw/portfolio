@@ -30,7 +30,7 @@ public class CommentController {
     ) {
         CommentResponseDto saved = commentService.createCommentForPost(postId, requestDto);
         return ResponseEntity
-                .created(URI.create("/api/comments/post/" + postId))
+                .created(URI.create("/api/comments/" + saved.getId()))
                 .body(saved);
     }
 
@@ -44,7 +44,7 @@ public class CommentController {
     // 댓글 수정
     @PutMapping("/edit/{commentId}")
     public ResponseEntity<CommentResponseDto> update(@PathVariable int commentId,
-                                                     @RequestBody CommentRequestDto requestDto) {
+                                                     @Valid @RequestBody CommentRequestDto requestDto) {
         CommentResponseDto updated = commentService.updateComment(commentId, requestDto);
         return ResponseEntity.ok(updated);
     }

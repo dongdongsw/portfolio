@@ -9,8 +9,10 @@ import com.example.demo.Login.Service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 import java.util.stream.Collectors;
+import java.time.format.DateTimeFormatter;
 
 @Service
 public class CommentService {
@@ -31,9 +33,10 @@ public class CommentService {
         comment.setPostId(postId);
         comment.setLoginId(requestDto.getLoginId());
         comment.setContent(requestDto.getContent());
+        comment.setUploadDate(java.time.LocalDateTime.now());
 
         CommentEntity saved = commentRepository.save(comment);
-        return toResponseDto(saved);
+        return new CommentResponseDto(saved, userService.getUserByLoginId(saved.getLoginId()).getNickName());
     }
 
     // 댓글 수정
@@ -44,8 +47,7 @@ public class CommentService {
 
         comment.setContent(requestDto.getContent());
         CommentEntity updated = commentRepository.save(comment);
-
-        return toResponseDto(updated);
+        return new CommentResponseDto(updated, userService.getUserByLoginId(updated.getLoginId()).getNickName());
     }
 
     // 댓글 삭제
@@ -61,27 +63,13 @@ public class CommentService {
     @Transactional(readOnly = true)
     public List<CommentResponseDto> getCommentsByPostId(int postId) {
         List<CommentEntity> comments = commentRepository.findByPostIdOrderByModifyDateDesc(postId);
-        return comments.stream().map(this::toResponseDto).collect(Collectors.toList());
-    }
-
-    // Entity → ResponseDto 변환
-    private CommentResponseDto toResponseDto(CommentEntity entity) {
-        String nickname = null;
-        try {
-            UserEntity user = userService.getUserByLoginId(entity.getLoginId());
-            nickname = (user != null ? user.getNickName() : null);
-        } catch (Exception e) {
-            nickname = null;
-        }
-
-        return new CommentResponseDto(
-                entity.getId(),
-                entity.getPostId(),
-                entity.getLoginId(),
-                nickname,
-                entity.getContent(),
-                entity.getUploadDate(),
-                entity.getModifyDate()
-        );
+        return comments.stream().map(entity -> {
+            String latestNickname = "Unknown";
+            try {
+                UserEntity user = userService.getUserByLoginId(entity.getLoginId());
+                if(user != null) latestNickname = user.getNickName();
+            } catch (Exception ignored) {}
+            return new CommentResponseDto(entity, latestNickname);
+        }).collect(Collectors.toList());
     }
 }
