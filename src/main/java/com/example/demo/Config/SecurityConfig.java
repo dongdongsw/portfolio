@@ -65,7 +65,7 @@ public class SecurityConfig {
                                         "/css/**",
                                         "/js/**",
                                         "/images/**",
-                                        "/profile/**")
+                                        "/uploads/**")
                                 .permitAll() //이 경로는 누구나 접근 허용이 가능(로그인 하지 않은 사용자들도 인증없이)
 
                         .requestMatchers(HttpMethod.OPTIONS, "/api/posts/profile-image").permitAll()
