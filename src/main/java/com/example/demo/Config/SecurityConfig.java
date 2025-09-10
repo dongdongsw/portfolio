@@ -59,21 +59,21 @@ public class SecurityConfig {
                                         "/api/posts/delete/**",
                                         "/api/post/{id}",
                                         "/api/posts/{postId}/comment/view",
-                                        "/api/posts/profile-image",
+                                        "/api/posts/author/**",
                                         //---------------------------
                                         "/api",
                                         "/css/**",
                                         "/js/**",
                                         "/images/**",
-                                        "/profile/**")
+                                        "/uploads/**")
                                 .permitAll() //이 경로는 누구나 접근 허용이 가능(로그인 하지 않은 사용자들도 인증없이)
 
-                        .requestMatchers(HttpMethod.OPTIONS, "/api/posts/profile-image").permitAll()
-                        .requestMatchers(HttpMethod.OPTIONS, "/api/posts/profile-image/**").permitAll()
-                        .requestMatchers(HttpMethod.POST,   "/api/posts/profile-image").permitAll()
-                        .requestMatchers(HttpMethod.POST,   "/api/posts/profile-image/**").permitAll()
-                        .requestMatchers(HttpMethod.DELETE, "/api/posts/profile-image").permitAll()
-                        .requestMatchers(HttpMethod.DELETE, "/api/posts/profile-image/**").permitAll()
+                                .requestMatchers(HttpMethod.OPTIONS, "/api/posts/profile-image").permitAll()
+                                .requestMatchers(HttpMethod.OPTIONS, "/api/posts/profile-image/**").permitAll()
+                                .requestMatchers(HttpMethod.POST,   "/api/posts/profile-image").permitAll()
+                                .requestMatchers(HttpMethod.POST,   "/api/posts/profile-image/**").permitAll()
+                                .requestMatchers(HttpMethod.DELETE, "/api/posts/profile-image").permitAll()
+                                .requestMatchers(HttpMethod.DELETE, "/api/posts/profile-image/**").permitAll()
                                 .anyRequest().authenticated() //그 외에는 모든 접근은 로그인된 사용자만 허락함
                 )
 //                .formLogin()
