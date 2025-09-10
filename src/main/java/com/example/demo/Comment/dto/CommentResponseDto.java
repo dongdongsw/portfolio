@@ -23,7 +23,7 @@ public class CommentResponseDto {
         this.nickname = latestNickname != null ? latestNickname : "Unknown";
         this.content = comment.getContent();
 
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy년 MM월 dd일 HH:mm");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
         this.uploadDate = comment.getUploadDate() != null ? comment.getUploadDate().format(formatter) : null;
         this.modifyDate = comment.getModifyDate() != null ? comment.getModifyDate().format(formatter) : null;
     }
