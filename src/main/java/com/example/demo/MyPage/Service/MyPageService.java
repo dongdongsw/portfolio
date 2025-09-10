@@ -153,6 +153,21 @@ public class MyPageService {
                 // 이미지 업로드 처리
                 if (profileImage != null && !profileImage.isEmpty()) {
                         try {
+                                if (user.getImagePath() != null && !user.getImagePath().isEmpty() && !user.getImagePath().startsWith("blob:")) {
+                                        try {
+                                                String uploadDir = System.getProperty("user.dir") + "/uploads/profile/";
+                                                Path oldFilePath = Paths.get(uploadDir, Paths.get(user.getImagePath()).getFileName().toString());
+
+                                                boolean deleted = Files.deleteIfExists(oldFilePath);
+                                                System.out.println("기존 이미지 삭제 시도: " + oldFilePath.toAbsolutePath() + " -> 결과: " + deleted);
+                                        } catch (Exception ex) {
+                                                System.out.println("기존 이미지 삭제 실패 (무시): " + ex.getMessage());
+                                        }
+                                }
+
+
+
+                                // 이미지 저장 하는 부분
                                 String uploadDir = "uploads/profile/";
                                 Files.createDirectories(Paths.get(uploadDir));
 
