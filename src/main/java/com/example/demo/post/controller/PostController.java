@@ -99,4 +99,11 @@ public class PostController {
                 })
                 .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
+
+    //
+    @GetMapping("/latest-images")
+    public List<String> getLatestPostImages() {
+        return postService.getLatestPostImages();
+    }
+
 }

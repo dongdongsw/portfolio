@@ -60,6 +60,7 @@ public class SecurityConfig {
                                         "/api/post/{id}",
                                         "/api/posts/{postId}/comment/view",
                                         "/api/posts/author/**",
+                                        "/api/posts/latest-images",
                                         //---------------------------
                                         "/api",
                                         "/css/**",

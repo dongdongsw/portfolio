@@ -470,4 +470,21 @@ public class PostService {
             this.usedNewPaths = usedNewPaths;
         }
     }
+
+    //최근 3개의 게시물 뽑기
+    public List<String> getLatestPostImages() {
+        List<PostEntity> posts = postRepository.findTop3ByOrderByUploaddateDesc();
+        List<String> images = new ArrayList<>();
+
+        for (PostEntity post : posts) {
+            ImageEntity image = post.getImageEntity();
+            if (image != null) {
+                if (image.getImagepath0() != null) {
+                    images.add(image.getImagepath0());
+                }
+            }
+        }
+        return images;
+    }
+
 }
