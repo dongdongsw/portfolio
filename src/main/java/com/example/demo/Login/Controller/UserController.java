@@ -1,3 +1,5 @@
+// src/main/java/com/example/demo/Login/Controller/UserController.java
+
 package com.example.demo.Login.Controller;
 
 import com.example.demo.Login.Service.MailService;
@@ -56,7 +58,7 @@ public class UserController {
         UserEntity userEntity = userService.getUserByLoginId(requestDto.getLoginid());
         UserLoginResponseDto responseDto = new UserLoginResponseDto(
                 userEntity.getLoginid(),
-                null, // 비밀번호는 null로 세션에 저장하지 않음
+                userEntity.getEmail(), // ✅ userEntity에서 이메일 값 할당
                 userEntity.getNickName(),
                 userEntity.getPhone(),
                 userEntity.getBirthday(),
@@ -79,6 +81,36 @@ public class UserController {
             return ResponseEntity.badRequest().body(null); // 로그인 세션이 없으면 에러
         }
         return ResponseEntity.ok(loginUser); // JSON 형태로 세션 DTO 반환
+    }
+
+    // 세션 정보 업데이트 API
+    @PatchMapping("/session-info")
+    public ResponseEntity<String> updateSessionInfo(@RequestBody UserLoginResponseDto requestDto, HttpSession session) {
+        UserLoginResponseDto loginUser = (UserLoginResponseDto) session.getAttribute("loginUser");
+        if (loginUser == null) {
+            return ResponseEntity.badRequest().body("로그인 세션이 없습니다.");
+        }
+
+        try {
+            userService.updateUserContactInfo(loginUser.getLoginid(), requestDto);
+
+            // ✅ 업데이트된 UserEntity 정보를 다시 조회하여 DTO를 재구성
+            UserEntity updatedUser = userService.getUserByLoginId(loginUser.getLoginid());
+            UserLoginResponseDto updatedDto = new UserLoginResponseDto(
+                    updatedUser.getLoginid(),
+                    updatedUser.getEmail(), // ✅ 업데이트된 유저에서 이메일 값 할당
+                    updatedUser.getNickName(),
+                    updatedUser.getPhone(),
+                    updatedUser.getBirthday(),
+                    updatedUser.getLocation(),
+                    updatedUser.getImagePath()
+            );
+            session.setAttribute("loginUser", updatedDto);
+
+            return ResponseEntity.ok("세션 정보가 업데이트되었습니다.");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     // 아이디 찾기 (이메일 존재 여부 검증 후 인증 이메일 발송)
@@ -172,5 +204,21 @@ public class UserController {
     public ResponseEntity<String> logout(HttpSession session) {
         session.invalidate(); // 세션 초기화
         return ResponseEntity.ok("로그아웃 되었습니다");
+    }
+
+    // 로그인한 사용자 정보 반환 (닉네임 포함) = 필요하다고 해서 메소드 하나 추가해용 ㅠㅠ
+    @GetMapping("/me")
+    public Map<String, Object> me(org.springframework.security.core.Authentication auth) {
+        if (auth == null || !auth.isAuthenticated()) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.UNAUTHORIZED
+            );
+        }
+        String loginId = auth.getName();
+        com.example.demo.Login.Entity.UserEntity user = userService.getUserByLoginId(loginId);
+        return java.util.Map.of(
+                "loginId", user.getLoginid(),
+                "nickname", user.getNickName()
+        );
     }
 }

@@ -9,4 +9,7 @@ public interface PostRepository extends JpaRepository<PostEntity, Long> {
 
 
     List<PostEntity> findByIdIn(List<Long> ids);
+
+    // 최신글 3개 불러오기
+    List<PostEntity> findTop3ByOrderByUploaddateDesc();
 }

@@ -24,12 +24,8 @@ public class CommentEntity {
     @Column(name = "login_id", length = 25, nullable = false)
     private String loginId;
 
-    @Column(name = "nickname", length = 20, nullable = false)
-    private String nickname;
-
-    @Column(name = "content", length = 50)
+    @Column(name = "content", length = 300)
     private String content;
-
 
     @CreatedDate
     @Column(name = "upload_date")
@@ -64,14 +60,6 @@ public class CommentEntity {
 
     public void setLoginId(String loginId) {
         this.loginId = loginId;
-    }
-
-    public String getNickname() {
-        return nickname;
-    }
-
-    public void setNickname(String nickname) {
-        this.nickname = nickname;
     }
 
     public String getContent() {

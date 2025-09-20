@@ -12,9 +12,17 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        // 게시글 이미지
         registry.addResourceHandler("/images/**")
-                .addResourceLocations("file:///" + uploadDir);
+                .addResourceLocations("file:" + System.getProperty("user.dir") + "/uploads/images/");
+
+        // 프로필 이미지
+        registry.addResourceHandler("/uploads/**")
+                .addResourceLocations("file:" + System.getProperty("user.dir") + "/uploads/");
+
+
     }
+
 
     @Bean
     public WebMvcConfigurer corsConfigurer() {
