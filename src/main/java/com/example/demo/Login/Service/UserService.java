@@ -1,5 +1,3 @@
-// src/main/java/com/example/demo/Login/Service/UserService.java
-
 package com.example.demo.Login.Service;
 
 import com.example.demo.Login.Repository.UserRepository;
@@ -48,7 +46,7 @@ public class UserService {
         userRepository.save(user);
     }
 
-//    로그인할 때 아이디와 비밀번호가 맞는지 체크
+//    //로그인할 때 아이디와 비밀번호가 맞는지 체크
 //    public UserLoginResponseDto login(UserLoginRequestDto requestDto){
 //        //아이디 체크
 //        UserEntity user = userRepository.findByLoginid(requestDto.getLoginid())
@@ -64,6 +62,7 @@ public class UserService {
 
     //아이디 찾기(이메일로 찾는 기능)
     public Optional<String> findLoginId(String email){
+
         return userRepository.findByEmail(email)
                 .map(UserEntity::getLoginid);
     }
@@ -90,8 +89,8 @@ public class UserService {
                 .orElse(false);
     }
 
-
     // --- MyPageService에서 활용할 수 있는 중복 확인 메서드 추가 ---
+
     // 이메일 중복 확인
     public boolean isEmailDuplicated(String email) {
         return userRepository.findByEmail(email).isPresent();
@@ -111,18 +110,5 @@ public class UserService {
     public UserEntity getUserByLoginId(String loginId) {
         return userRepository.findByLoginid(loginId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다. (loginId: " + loginId + ")"));
-    }
-
-    // ✅ 사용자 연락처 정보 업데이트 메서드 추가 (이메일 제외)
-    public void updateUserContactInfo(String loginId, UserLoginResponseDto requestDto) {
-        UserEntity user = userRepository.findByLoginid(loginId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
-
-        user.setPhone(requestDto.getPhone());
-        user.setLocation(requestDto.getLocation());
-        user.setBirthday(requestDto.getBirthday());
-        user.setImagePath(requestDto.getImagePath());
-
-        userRepository.save(user);
     }
 }

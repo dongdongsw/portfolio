@@ -1,5 +1,3 @@
-// src/main/java/com/example/demo/Login/Controller/UserController.java
-
 package com.example.demo.Login.Controller;
 
 import com.example.demo.Login.Service.MailService;
@@ -39,6 +37,33 @@ public class UserController {
         return ResponseEntity.ok("회원가입이 완료되었습니다.");
     }
 
+    // 회원가입 - 1. 아이디 중복 체크
+    @GetMapping("/check-id")
+    public ResponseEntity<String> checkLoginId(@RequestParam String loginid) {
+        if (userService.isLoginIdDuplicated(loginid)) {
+            return ResponseEntity.badRequest().body("이미 사용 중인 아이디입니다.");
+        }
+        return ResponseEntity.ok().build();
+    }
+
+    // 회원가입 - 2. 이메일 중복 체크
+    @GetMapping("/check-email")
+    public ResponseEntity<String> checkEmail(@RequestParam String email) {
+        if (userService.isEmailDuplicated(email)) {
+            return ResponseEntity.badRequest().body("이미 사용 중인 이메일입니다.");
+        }
+        return ResponseEntity.ok().build();
+    }
+
+    // 회원가입 - 3. 닉네임 중복 체크
+    @GetMapping("/check-nickname")
+    public ResponseEntity<String> checkNickname(@RequestParam String nickname) {
+        if (userService.isNicknameDuplicated(nickname)) {
+            return ResponseEntity.badRequest().body("이미 사용 중인 닉네임입니다.");
+        }
+        return ResponseEntity.ok().build();
+    }
+
     // 로그인
     @PostMapping("/login")
     public ResponseEntity<String> login(@RequestBody UserLoginRequestDto requestDto, HttpSession session) {
@@ -58,7 +83,7 @@ public class UserController {
         UserEntity userEntity = userService.getUserByLoginId(requestDto.getLoginid());
         UserLoginResponseDto responseDto = new UserLoginResponseDto(
                 userEntity.getLoginid(),
-                userEntity.getEmail(), // ✅ userEntity에서 이메일 값 할당
+                null, // 비밀번호는 null로 세션에 저장하지 않음
                 userEntity.getNickName(),
                 userEntity.getPhone(),
                 userEntity.getBirthday(),
@@ -81,36 +106,6 @@ public class UserController {
             return ResponseEntity.badRequest().body(null); // 로그인 세션이 없으면 에러
         }
         return ResponseEntity.ok(loginUser); // JSON 형태로 세션 DTO 반환
-    }
-
-    // 세션 정보 업데이트 API
-    @PatchMapping("/session-info")
-    public ResponseEntity<String> updateSessionInfo(@RequestBody UserLoginResponseDto requestDto, HttpSession session) {
-        UserLoginResponseDto loginUser = (UserLoginResponseDto) session.getAttribute("loginUser");
-        if (loginUser == null) {
-            return ResponseEntity.badRequest().body("로그인 세션이 없습니다.");
-        }
-
-        try {
-            userService.updateUserContactInfo(loginUser.getLoginid(), requestDto);
-
-            // ✅ 업데이트된 UserEntity 정보를 다시 조회하여 DTO를 재구성
-            UserEntity updatedUser = userService.getUserByLoginId(loginUser.getLoginid());
-            UserLoginResponseDto updatedDto = new UserLoginResponseDto(
-                    updatedUser.getLoginid(),
-                    updatedUser.getEmail(), // ✅ 업데이트된 유저에서 이메일 값 할당
-                    updatedUser.getNickName(),
-                    updatedUser.getPhone(),
-                    updatedUser.getBirthday(),
-                    updatedUser.getLocation(),
-                    updatedUser.getImagePath()
-            );
-            session.setAttribute("loginUser", updatedDto);
-
-            return ResponseEntity.ok("세션 정보가 업데이트되었습니다.");
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
     }
 
     // 아이디 찾기 (이메일 존재 여부 검증 후 인증 이메일 발송)
@@ -171,29 +166,46 @@ public class UserController {
                         .body(Map.of("error", "해당 이메일로 가입된 계정이 없습니다.")));
     }
 
-    // 비밀번호 재설정 (이메일 인증번호 검증 후 새 비밀번호 설정)
-    @PostMapping("/findpw/verify-pw")
-    public ResponseEntity<String> resetPassword(@RequestBody Map<String, String> requestBody, HttpSession session) {
+    // 인증번호 확인 전용 API (비밀번호 변경은 하지 않음)
+    @PostMapping("/findpw/verify-code")
+    public ResponseEntity<String> verifyPwCode(@RequestBody Map<String, String> requestBody, HttpSession session) {
         String code = requestBody.get("code");
-        String newPassword = requestBody.get("newPassword");
 
-        // 세션에서 저장된 인증 정보 불러오기
+        // 세션에서 저장된 인증번호 불러오기
         String sessionAuth = (String) session.getAttribute("pwAuthCode");
-        String loginId = (String) session.getAttribute("pwAuthLoginId");
-        String email = (String) session.getAttribute("pwAuthEmail");
 
-        // 인증번호 확인
         if (sessionAuth == null || !sessionAuth.equals(code)) {
             return ResponseEntity.badRequest().body("인증번호가 일치하지 않습니다.");
         }
 
-        // 비밀번호 변경
-        boolean updated = userService.resetPassword(loginId, email, newPassword);
+        // 실제 비밀번호 변경은 하지 않고 프론트에서 "이메일 인증 완료" 메시지를 표시하도록 함
+        return ResponseEntity.ok("이메일 인증이 완료되었습니다.");
+    }
+
+    // 비밀번호 재설정 API (Reset PW 단계에서만 호출)
+    @PostMapping("/findpw/reset-password")
+    public ResponseEntity<String> resetPassword(@RequestBody Map<String, String> requestBody, HttpSession session) {
+        String newPassword = requestBody.get("newPassword");
+        String loginId = (String) session.getAttribute("pwAuthLoginId");
+        String email = (String) session.getAttribute("pwAuthEmail");
+
+        if (loginId == null || email == null) {
+            return ResponseEntity.badRequest().body("세션 정보가 만료되었습니다. 다시 시도해주세요.");
+        }
+
+        boolean updated;
+        try {
+            updated = userService.resetPassword(loginId, email, newPassword);
+        } catch (IllegalArgumentException e) {
+            // 기존 비밀번호와 같을 때 발생
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+
         if (!updated) {
             return ResponseEntity.badRequest().body("비밀번호 변경 실패");
         }
 
-        // 세션 초기화
+        // 비밀번호 변경 성공 시 세션 초기화
         session.invalidate();
 
         return ResponseEntity.ok("비밀번호가 성공적으로 변경되었습니다.");
@@ -204,21 +216,5 @@ public class UserController {
     public ResponseEntity<String> logout(HttpSession session) {
         session.invalidate(); // 세션 초기화
         return ResponseEntity.ok("로그아웃 되었습니다");
-    }
-
-    // 로그인한 사용자 정보 반환 (닉네임 포함) = 필요하다고 해서 메소드 하나 추가해용 ㅠㅠ
-    @GetMapping("/me")
-    public Map<String, Object> me(org.springframework.security.core.Authentication auth) {
-        if (auth == null || !auth.isAuthenticated()) {
-            throw new org.springframework.web.server.ResponseStatusException(
-                    org.springframework.http.HttpStatus.UNAUTHORIZED
-            );
-        }
-        String loginId = auth.getName();
-        com.example.demo.Login.Entity.UserEntity user = userService.getUserByLoginId(loginId);
-        return java.util.Map.of(
-                "loginId", user.getLoginid(),
-                "nickname", user.getNickName()
-        );
     }
 }
