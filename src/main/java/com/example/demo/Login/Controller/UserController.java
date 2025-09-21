@@ -39,6 +39,36 @@ public class UserController {
         return ResponseEntity.ok("회원가입이 완료되었습니다.");
     }
 
+    // 아이디 중복 체크
+    @GetMapping("/check-id")
+    public ResponseEntity<String> checkLoginId(@RequestParam String loginid) {
+        boolean exists = userService.isLoginIdDuplicated(loginid); // UserService 메서드 사용
+        if (exists) {
+            return ResponseEntity.badRequest().body("이미 존재하는 아이디입니다.");
+        }
+        return ResponseEntity.ok("사용 가능한 아이디입니다.");
+    }
+
+    // 이메일 중복 체크
+    @GetMapping("/check-email")
+    public ResponseEntity<String> checkEmail(@RequestParam String email) {
+        boolean exists = userService.isEmailDuplicated(email); // UserService 메서드 사용
+        if (exists) {
+            return ResponseEntity.badRequest().body("이미 존재하는 이메일입니다.");
+        }
+        return ResponseEntity.ok("사용 가능한 이메일입니다.");
+    }
+
+    // 닉네임 중복 체크
+    @GetMapping("/check-nickname")
+    public ResponseEntity<String> checkNickname(@RequestParam String nickname) {
+        boolean exists = userService.isNicknameDuplicated(nickname); // UserService 메서드 사용
+        if (exists) {
+            return ResponseEntity.badRequest().body("이미 존재하는 닉네임입니다.");
+        }
+        return ResponseEntity.ok("사용 가능한 닉네임입니다.");
+    }
+
     // 로그인
     @PostMapping("/login")
     public ResponseEntity<String> login(@RequestBody UserLoginRequestDto requestDto, HttpSession session) {
@@ -171,6 +201,24 @@ public class UserController {
                         .body(Map.of("error", "해당 이메일로 가입된 계정이 없습니다.")));
     }
 
+    // 인증번호 확인
+    @PostMapping("/findpw/verify-code")
+    public ResponseEntity<String> verifyPwCode(@RequestBody Map<String, String> requestBody,
+                                               HttpSession session) {
+        String code = requestBody.get("code");
+        String sessionCode = (String) session.getAttribute("pwAuthCode");
+
+        if (sessionCode == null) {
+            return ResponseEntity.badRequest().body("인증번호가 존재하지 않습니다.");
+        }
+
+        if (!sessionCode.equals(code)) {
+            return ResponseEntity.badRequest().body("인증번호가 일치하지 않습니다.");
+        }
+
+        return ResponseEntity.ok("인증번호가 확인되었습니다.");
+    }
+    
     // 비밀번호 재설정 (이메일 인증번호 검증 후 새 비밀번호 설정)
     @PostMapping("/findpw/verify-pw")
     public ResponseEntity<String> resetPassword(@RequestBody Map<String, String> requestBody, HttpSession session) {

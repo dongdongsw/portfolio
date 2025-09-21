@@ -46,20 +46,6 @@ public class UserService {
         userRepository.save(user);
     }
 
-//    //로그인할 때 아이디와 비밀번호가 맞는지 체크
-//    public UserLoginResponseDto login(UserLoginRequestDto requestDto){
-//        //아이디 체크
-//        UserEntity user = userRepository.findByLoginid(requestDto.getLoginid())
-//                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 아이디입니다."));
-//
-//        //비밀번호 체크(평문 비밀번호와 암호화된 비밀번호 비교)
-//        if(!passwordEncoder.matches(requestDto.getLoginpw(), user.getUserPwd())) {
-//            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
-//        }
-//        //아이디와 비밀번호를 둘다 체크하면 리턴
-//        return new UserLoginResponseDto(user.getLoginid(), user.getEmail(), user.getNickName());
-//    }
-
     //아이디 찾기(이메일로 찾는 기능)
     public Optional<String> findLoginId(String email){
 
