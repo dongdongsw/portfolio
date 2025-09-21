@@ -93,6 +93,7 @@ public class PostController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+
     //
     @GetMapping("/latest-images")
     public List<String> getLatestPostImages() {
