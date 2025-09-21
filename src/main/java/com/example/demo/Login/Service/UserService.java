@@ -111,4 +111,17 @@ public class UserService {
         return userRepository.findByLoginid(loginId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다. (loginId: " + loginId + ")"));
     }
+
+    // ✅ 사용자 연락처 정보 업데이트 메서드 추가 (이메일 제외)
+    public void updateUserContactInfo(String loginId, UserLoginResponseDto requestDto) {
+        UserEntity user = userRepository.findByLoginid(loginId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        user.setPhone(requestDto.getPhone());
+        user.setLocation(requestDto.getLocation());
+        user.setBirthday(requestDto.getBirthday());
+        user.setImagePath(requestDto.getImagePath());
+
+        userRepository.save(user);
+    }
 }

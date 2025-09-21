@@ -51,8 +51,8 @@ public class SecurityConfig {
                                         "/api/user/findid/send-auth",
                                         "/api/user/findid/verify-id",
                                         "/api/user/findpw/send-auth",
+                                        "/api/user/findpw/verify-pw",
                                         "/api/user/findpw/verify-code",
-                                        "/api/user/findpw/reset-password",
                                         "/api/user/logout",
                                         //---------------------------
                                         "/api/mypage/**",

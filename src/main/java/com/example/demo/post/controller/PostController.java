@@ -40,11 +40,6 @@ public class PostController {
         return "작성 완료";
     }
 
-    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
-    public String createPostJson(@RequestBody PostRequestDto dto) {
-        postService.createPost(dto);
-        return "작성 완료";
-    }
 
     // 2) 글 전체 조회
     @GetMapping
@@ -80,24 +75,22 @@ public class PostController {
         return "삭제 완료";
     }
 
-    // ============================================
-    // 7) 작성자 공개 정보 조회 (닉네임 기준)
-    //     GET /api/posts/author/by-nickname/{nickname}
-    // ============================================
-    @GetMapping(value = "/author/by-nickname/{nickname}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Map<String, Object>> getAuthorByNickname(@PathVariable String nickname) {
-        return userRepository.findByNickname(nickname)
+    // 작성자 공개 정보 조회 (loginid 기준): GET /api/posts/author?loginid=xxx
+    @GetMapping("/author")
+    public ResponseEntity<Map<String, Object>> author(@RequestParam String loginid) {
+        return userRepository.findByLoginid(loginid)
                 .map(u -> {
                     Map<String, Object> body = new HashMap<>();
+                    body.put("loginId",   u.getLoginid());
                     body.put("nickName",  u.getNickName());
                     body.put("email",     u.getEmail());
                     body.put("phone",     u.getPhone());
-                    body.put("birthday",  u.getBirthday());   // LocalDate → "YYYY-MM-DD"
+                    body.put("birthday",  u.getBirthday());
                     body.put("imagePath", u.getImagePath());
                     body.put("location",  u.getLocation());
                     return ResponseEntity.ok(body);
                 })
-                .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     //
