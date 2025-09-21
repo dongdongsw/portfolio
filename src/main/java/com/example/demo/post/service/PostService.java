@@ -1,6 +1,5 @@
 package com.example.demo.post.service;
 
-import com.example.demo.Login.Entity.UserEntity;
 import com.example.demo.post.dto.PostRequestDto;
 import com.example.demo.post.dto.PostResponseDto;
 import com.example.demo.post.entity.PostEntity;
@@ -188,75 +187,6 @@ public class PostService {
     // 🔸 프로필 이미지: 업로드 & 삭제 (UserEntity.imagePath 갱신)
     // ========================================================================
 
-    /** 로그인 아이디로 사용자 찾아 프로필 이미지 업로드 후 imagePath 갱신, 이전 내부 파일 정리 */
-    @Transactional
-    public String uploadProfileImage(String loginId, MultipartFile file) {
-        if (loginId == null) throw new RuntimeException("로그인이 필요합니다.");
-        UserEntity user = userRepository.findByLoginid(loginId)
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
-
-        if (file == null || file.isEmpty()) {
-            throw new RuntimeException("이미지 파일이 비어있습니다.");
-        }
-        String contentType = Optional.ofNullable(file.getContentType()).orElse("").toLowerCase(Locale.ROOT);
-        if (!contentType.startsWith("image/")) {
-            throw new RuntimeException("이미지 파일만 업로드 가능합니다.");
-        }
-
-        ensureProfileDirectory();
-
-        try {
-            String original = file.getOriginalFilename();
-            String extension = "";
-            if (original != null && original.lastIndexOf('.') != -1) {
-                extension = original.substring(original.lastIndexOf('.'));
-            }
-            String saved = UUID.randomUUID().toString() + extension;
-            File target = new File(profileDir, saved);
-            file.transferTo(target);
-
-            String webPath = "/images/profileImages/" + saved;
-
-            // 기존 내부 프로필 파일 삭제
-            deleteOldProfileInternal(user.getImagePath());
-
-            // DB 갱신
-            user.setImagePath(webPath);
-            userRepository.save(user);
-
-            return webPath;
-        } catch (IOException e) {
-            throw new RuntimeException("프로필 이미지 저장 중 오류가 발생했습니다.", e);
-        }
-    }
-
-    /** 로그인 아이디로 사용자 찾아 프로필 이미지 제거(내부 파일 삭제 + imagePath null) */
-    @Transactional
-    public void clearProfileImage(String loginId) {
-        if (loginId == null) throw new RuntimeException("로그인이 필요합니다.");
-        UserEntity user = userRepository.findByLoginid(loginId)
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
-
-        deleteOldProfileInternal(user.getImagePath());
-        user.setImagePath(null);
-        userRepository.save(user);
-    }
-
-    private void ensureProfileDirectory() {
-        File directory = new File(profileDir);
-        if (!directory.exists()) directory.mkdirs();
-    }
-
-    private void deleteOldProfileInternal(String oldWebPath) {
-        if (oldWebPath == null) return;
-        String prefix = "/images/profileImages/";
-        if (oldWebPath.startsWith(prefix)) {
-            File f = new File(profileDir, oldWebPath.substring(prefix.length()));
-            if (f.exists()) {
-                try { f.delete(); } catch (Exception ignore) {}
-            }
-        }
-    }
 
     // ========================================================================
     // Helper methods (게시글 이미지 처리)
